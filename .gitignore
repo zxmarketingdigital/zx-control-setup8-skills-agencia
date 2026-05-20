@@ -1,7 +1,6 @@
 .env
 .env.local
 *.env
-!.env.template
 !.env.example
 
 # Python
@@ -13,6 +12,9 @@ __pycache__/
 venv/
 .venv/
 env/
+
+# Backups gerados por install.sh quando reinstala (skill já existente)
+*.bak-*
 
 # macOS
 .DS_Store

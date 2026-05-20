@@ -91,7 +91,10 @@ LML_DST="$HOME/projetos/lead-machine-lite"
 step "Copiando Lead Machine Lite para $LML_DST ..."
 if [ "$DRY_RUN" = false ]; then
   mkdir -p "$HOME/projetos"
-  rm -rf "$LML_DST"
+  if [ -d "$LML_DST" ]; then
+    mv "$LML_DST" "$LML_DST.bak-$(date +%s)"
+    warn "Lead Machine Lite já existia em $LML_DST — backup criado em $LML_DST.bak-*"
+  fi
   cp -r "$LML_SRC" "$LML_DST"
 fi
 ok "Lead Machine Lite copiado"
