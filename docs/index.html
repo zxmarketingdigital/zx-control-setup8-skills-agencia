@@ -69,12 +69,11 @@
     </header>
 
     <!--
-      DADOS INLINE (NUNCA fetch() — dashboard pode ser aberto via file:// e CORS bloqueia).
+      DADOS INLINE — sem chamadas de rede. Dashboard pode ser aberto via file:// sem CORS.
       Script Python parametriza esta variável no build.
     -->
     <script>
-      // Dados inline (nunca fetch() — file:// bloqueia CORS).
-      // tojson serializa dict Python como JSON válido (aspas duplas).
+      // Dados inline — sem chamadas de rede. tojson serializa dict Python como JSON válido.
       const _SETUP_DATA = "{}";
     </script>
 
