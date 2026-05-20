@@ -14,16 +14,38 @@ for arg in "$@"; do
   case $arg in
     --dry-run) DRY_RUN=true ;;
     --bloco-a) BLOCO_A_ONLY=true ;;
+    --help|-h)
+      echo "Setup 8 — Skills da Agência IA + Lead Machine Lite"
+      echo ""
+      echo "Uso: bash install.sh [--dry-run] [--bloco-a]"
+      echo "  --dry-run   Simula sem efeitos colaterais"
+      echo "  --bloco-a   Instala só as 5 skills (sem Lead Machine)"
+      exit 0
+      ;;
+    *)
+      echo "Flag desconhecida: $arg (use --help)" >&2
+      exit 1
+      ;;
   esac
 done
 
 header() { echo ""; echo "╔══════════════════════════════════════════╗"; echo "║  $1"; echo "╚══════════════════════════════════════════╝"; }
 ok()     { echo "  ✅  $1"; }
 warn()   { echo "  ⚠️   $1"; }
+err()    { echo "  ❌  $1" >&2; }
 step()   { echo "  →  $1"; }
+
+# Detectar SO — Lead Machine requer macOS (LaunchAgents)
+OS_NAME="$(uname)"
 
 header "Setup 8 — Skills da Agência IA + Lead Machine Lite"
 echo "  Modo: $([ "$DRY_RUN" = true ] && echo 'DRY-RUN (sem side effects)' || echo 'INSTALAÇÃO REAL')"
+echo "  SO:   $OS_NAME"
+if [ "$OS_NAME" != "Darwin" ] && [ "$BLOCO_A_ONLY" = false ]; then
+  warn "Setup 8 Bloco B (Lead Machine) requer macOS — detectado $OS_NAME"
+  warn "Auto-ativando --bloco-a (só skills serão instaladas)"
+  BLOCO_A_ONLY=true
+fi
 echo ""
 
 # ── Bloco A: 5 Skills ────────────────────────────────────────────
@@ -32,11 +54,23 @@ SKILLS=(diagnostico-empreendedor analise-call prototipar-sistema simulador-venda
 for s in "${SKILLS[@]}"; do
   step "Copiando /$s ..."
   if [ "$DRY_RUN" = false ]; then
+    if [ -d "$SKILLS_DST/$s" ]; then
+      mv "$SKILLS_DST/$s" "$SKILLS_DST/$s.bak-$(date +%s)"
+      warn "$s já existia — backup criado em $s.bak-*"
+    fi
     mkdir -p "$SKILLS_DST/$s"
     cp -r "$REPO_DIR/skills/$s/." "$SKILLS_DST/$s/"
   fi
   ok "$s → $SKILLS_DST/$s/"
 done
+
+# Helpers compartilhados (_shared) — usados por algumas skills pra renderizar HTML
+step "Copiando _shared helpers ..."
+if [ "$DRY_RUN" = false ]; then
+  mkdir -p "$SKILLS_DST/_shared"
+  cp -r "$REPO_DIR/skills/_shared/." "$SKILLS_DST/_shared/"
+fi
+ok "_shared → $SKILLS_DST/_shared/"
 
 echo ""
 echo "  5 skills instaladas. Disponíveis imediatamente no Claude Code:"
@@ -57,30 +91,46 @@ LML_DST="$HOME/projetos/lead-machine-lite"
 step "Copiando Lead Machine Lite para $LML_DST ..."
 if [ "$DRY_RUN" = false ]; then
   mkdir -p "$HOME/projetos"
+  rm -rf "$LML_DST"
   cp -r "$LML_SRC" "$LML_DST"
 fi
 ok "Lead Machine Lite copiado"
 
-# Python 3.10+
+# Python 3.10+ — exigência hard (Pydantic + FastAPI + Lead Machine backend)
 step "Verificando Python 3.10+ ..."
-PY=$(python3 --version 2>&1 | grep -oE '[0-9]+\.[0-9]+' | head -1)
+PY=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 PY_MAJOR=$(echo "$PY" | cut -d. -f1)
 PY_MINOR=$(echo "$PY" | cut -d. -f2)
 if [ "$PY_MAJOR" -lt 3 ] || { [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt 10 ]; }; then
-  warn "Python $PY encontrado — requer 3.10+. Instale via: brew install python@3.10"
-  warn "Continuando mesmo assim — backend pode falhar."
+  err "Python $PY encontrado — Lead Machine requer 3.10+ (Pydantic v2 + FastAPI)"
+  err "Instale com: brew install python@3.12 && rode novamente bash install.sh"
+  exit 1
+fi
+ok "Python $PY ✓"
+
+# brew (pré-req do cloudflared)
+step "Verificando Homebrew ..."
+if ! command -v brew &>/dev/null; then
+  warn "Homebrew não encontrado — instale em https://brew.sh"
+  warn "Pulando instalação automática do cloudflared. Você pode instalar manualmente depois."
+  HAS_BREW=false
 else
-  ok "Python $PY ✓"
+  ok "Homebrew $(brew --version 2>&1 | head -1) ✓"
+  HAS_BREW=true
 fi
 
 # cloudflared
 step "Verificando cloudflared ..."
 if ! command -v cloudflared &>/dev/null; then
-  warn "cloudflared não encontrado. Instalando via brew ..."
-  if [ "$DRY_RUN" = false ]; then
-    brew install cloudflare/cloudflare/cloudflared 2>&1 | tail -3
+  if [ "$HAS_BREW" = true ]; then
+    warn "cloudflared não encontrado. Instalando via brew ..."
+    if [ "$DRY_RUN" = false ]; then
+      brew install cloudflare/cloudflare/cloudflared 2>&1 | tail -3 || warn "Falha no brew install — instale manualmente depois"
+    fi
+    ok "cloudflared instalado (ou pendente — backend sobe sem tunnel)"
+  else
+    warn "cloudflared faltando + sem brew. Backend vai subir, mas SEM tunnel público."
   fi
-  ok "cloudflared instalado"
 else
   ok "cloudflared $(cloudflared --version 2>&1 | head -1) ✓"
 fi

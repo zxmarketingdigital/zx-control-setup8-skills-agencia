@@ -4,7 +4,7 @@ check_prerequisites.py — Validador inicial do Setup 8: Skills da Agência IA +
 Roda ANTES de qualquer setup_*.py. Bloqueia avanço se ambiente do aluno
 não atende os pré-requisitos.
 
-Compatível Python 3.9+ (alunos com macOS Monterey têm 3.9 de fábrica).
+Compatível Python 3.10+ (backend Lead Machine + Pydantic v2 exigem 3.10).
 NUNCA usar type unions com `|` — usar Optional/List do typing.
 """
 
@@ -23,7 +23,7 @@ from typing import Optional, Tuple
 CONFIG_PATH = Path.home() / ".operacao-ia" / "config" / "config.json"
 SETUP_NUMBER = 8
 REQUIRED_PHASE = 7
-MIN_PYTHON = (3, 9)
+MIN_PYTHON = (3, 10)
 
 
 def _check(label: str, ok: bool, detail: str = "") -> bool:

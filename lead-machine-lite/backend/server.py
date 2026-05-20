@@ -22,7 +22,7 @@ import time
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Header, HTTPException, Query, Request
@@ -191,7 +191,7 @@ def _lead_public_view(lead: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def load_lead(lead_id: str) -> dict[str, Any] | None:
+def load_lead(lead_id: str) -> Optional[dict[str, Any]]:
     path = _lead_path(lead_id)
     if not path.exists():
         return None
@@ -529,11 +529,11 @@ app.add_middleware(
 class LeadNewIn(BaseModel):
     nome: str = Field(..., min_length=1, max_length=200)
     email: str = Field(..., min_length=3, max_length=320)
-    empresa: str | None = Field(default=None, max_length=200)
-    telefone: str | None = Field(default=None, max_length=40)
-    segmento: str | None = Field(default=None, max_length=200)  # opcional — pra LP que quiser passar
-    website: str | None = Field(default=None, max_length=500)
-    instagram: str | None = Field(default=None, max_length=200)
+    empresa: Optional[str] = Field(default=None, max_length=200)
+    telefone: Optional[str] = Field(default=None, max_length=40)
+    segmento: Optional[str] = Field(default=None, max_length=200)  # opcional — pra LP que quiser passar
+    website: Optional[str] = Field(default=None, max_length=500)
+    instagram: Optional[str] = Field(default=None, max_length=200)
 
 
 class AnswerIn(BaseModel):
@@ -811,7 +811,7 @@ Roteiro da call de descoberta/kickoff: agenda, perguntas-chave para validar o di
 Cada seção: foco em acionabilidade. Personalize com nome da empresa, segmento e gargalos reais do diagnóstico."""
 
 
-def _check_aluno_token(x_aluno_token: str | None) -> None:
+def _check_aluno_token(x_aluno_token: Optional[str]) -> None:
     """Valida o header X-Aluno-Token com comparação constant-time.
 
     Em PRODUÇÃO, ALUNO_TOKEN deve estar setado. Se vazio (INSECURE_DEV_MODE),
@@ -861,7 +861,7 @@ def _lead_summary(lead: dict[str, Any]) -> dict[str, Any]:
 
 @app.get("/api/leads")
 def api_list_leads(
-    x_aluno_token: str | None = Header(default=None),
+    x_aluno_token: Optional[str] = Header(default=None),
     limit: int = Query(default=100, le=500, ge=1),
     offset: int = Query(default=0, ge=0),
 ) -> dict[str, Any]:
@@ -902,7 +902,7 @@ def api_list_leads(
 
 
 @app.get("/api/lead/{lead_id}")
-def api_lead_detail(lead_id: str, x_aluno_token: str | None = Header(default=None)) -> dict[str, Any]:
+def api_lead_detail(lead_id: str, x_aluno_token: Optional[str] = Header(default=None)) -> dict[str, Any]:
     _check_aluno_token(x_aluno_token)
     lead_id = _validate_lead_id(lead_id)
     lead = load_lead(lead_id)
@@ -958,7 +958,7 @@ def _lead_context_for_materials(lead: dict[str, Any]) -> str:
 @app.post("/lead/generate-copy")
 async def lead_generate_copy(
     body: GenerateCopyIn,
-    x_aluno_token: str | None = Header(default=None),
+    x_aluno_token: Optional[str] = Header(default=None),
 ) -> dict[str, Any]:
     _check_aluno_token(x_aluno_token)
     lead_id = _validate_lead_id(body.lead_id)
@@ -1020,7 +1020,7 @@ async def lead_generate_copy(
 @app.post("/lead/generate-kit")
 async def lead_generate_kit(
     body: GenerateKitIn,
-    x_aluno_token: str | None = Header(default=None),
+    x_aluno_token: Optional[str] = Header(default=None),
 ) -> dict[str, Any]:
     _check_aluno_token(x_aluno_token)
     lead_id = _validate_lead_id(body.lead_id)
@@ -1071,7 +1071,7 @@ async def lead_generate_kit(
 
 
 @app.get("/dashboard")
-def serve_dashboard(x_aluno_token: str | None = Header(default=None)) -> FileResponse:
+def serve_dashboard(x_aluno_token: Optional[str] = Header(default=None)) -> FileResponse:
     _check_aluno_token(x_aluno_token)
     if not DASHBOARD_INDEX.exists():
         raise HTTPException(status_code=404, detail="dashboard_nao_encontrado")
