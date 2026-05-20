@@ -8,8 +8,6 @@ Reproduz LITERAL o fluxo do ZX Lead Machine MVP1 (Lovable):
 Storage: arquivos JSON em ~/zx-leads/{lead_id}.json (com fcntl.flock).
 LLM: Claude API direto (anthropic SDK).
 """
-from __future__ import annotations
-
 import asyncio
 import fcntl
 import json
@@ -25,7 +23,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi import Body, FastAPI, Header, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
@@ -53,27 +51,99 @@ LEADS_DIR.mkdir(parents=True, exist_ok=True)
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "").strip()
 MODEL = os.getenv("MODEL", "claude-sonnet-4-6").strip() or "claude-sonnet-4-6"
 ALUNO_TOKEN = os.getenv("ALUNO_TOKEN", "").strip()
+ALLOW_INSECURE = os.getenv("LEAD_MACHINE_ALLOW_INSECURE", "0").strip() == "1"
 
-# INSECURE_DEV_MODE: ALUNO_TOKEN não configurado → permite tudo (apenas dev/install).
-# Em produção SEMPRE definir ALUNO_TOKEN. Gere com:
-#   python -c "import secrets; print(secrets.token_urlsafe(24))"
+# INSECURE_DEV_MODE: ALUNO_TOKEN vazio. EM PRODUÇÃO BLOQUEIA STARTUP.
+# Pra rodar mesmo sem token (dev local apenas): LEAD_MACHINE_ALLOW_INSECURE=1
 INSECURE_DEV_MODE = not bool(ALUNO_TOKEN)
 _last_insecure_warn_ts: float = 0.0
 
 DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"
 DASHBOARD_INDEX = DASHBOARD_DIR / "index.html"
 
+# CORS — origens permitidas. Por padrão só localhost + trycloudflare.
+# Aluno pode customizar via LEAD_MACHINE_CORS_ORIGINS="https://meu.dom,https://outro.dom".
+_default_origins = "http://localhost:8792,http://127.0.0.1:8792,https://*.trycloudflare.com"
+CORS_ORIGINS = [o.strip() for o in os.getenv("LEAD_MACHINE_CORS_ORIGINS", _default_origins).split(",") if o.strip()]
+
 if not ANTHROPIC_API_KEY:
     log.warning("ANTHROPIC_API_KEY não configurada — LLM não vai funcionar")
 
 if INSECURE_DEV_MODE:
+    if not ALLOW_INSECURE:
+        log.error("=" * 70)
+        log.error("ALUNO_TOKEN vazio. Backend ABORTADO por segurança.")
+        log.error("Gere um token com: python -c \"import secrets; print(secrets.token_urlsafe(24))\"")
+        log.error("e adicione no .env: ALUNO_TOKEN=<token>")
+        log.error("Pra rodar sem token (dev local APENAS, NUNCA com tunnel ativo):")
+        log.error("  export LEAD_MACHINE_ALLOW_INSECURE=1")
+        log.error("=" * 70)
+        sys.exit(1)
     log.warning("=" * 70)
-    log.warning("INSECURE_DEV_MODE: ALUNO_TOKEN vazio. Endpoints aluno SEM autenticação.")
-    log.warning("Produção EXIGE ALUNO_TOKEN. Gere com:")
-    log.warning('  python -c "import secrets; print(secrets.token_urlsafe(24))"')
+    log.warning("INSECURE_DEV_MODE ativo (LEAD_MACHINE_ALLOW_INSECURE=1). Endpoints SEM auth.")
+    log.warning("NUNCA use com tunnel cloudflared ativo — leads ficam públicos na internet.")
     log.warning("=" * 70)
 
 anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
+
+# ─────────────────────────────────────────────────────────────
+# Validação local: shim Anthropic→Gemini (ativa quando GEMINI_API_KEY existe)
+# Remover antes de mergear pra alunos — é só pra validação no Mac do Rafael.
+# ─────────────────────────────────────────────────────────────
+_GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
+if _GEMINI_API_KEY:
+    import google.generativeai as genai
+    genai.configure(api_key=_GEMINI_API_KEY)
+    _GEMINI_MODEL_ID = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash-exp")
+
+    class _GBlock:
+        def __init__(self, text):
+            self.text = text
+            self.type = "text"
+
+    class _GResp:
+        def __init__(self, text):
+            self.content = [_GBlock(text)]
+            self.stop_reason = "end_turn"
+
+    class _GMessages:
+        def create(self, model=None, system=None, messages=None, max_tokens=None, **kw):
+            msgs = list(messages or [])
+            had_prefill = False
+            # Drop Anthropic prefill "{" no fim (Gemini não aceita)
+            if msgs and msgs[-1].get("role") == "assistant":
+                c = msgs[-1].get("content", "")
+                if isinstance(c, str) and c.strip() == "{":
+                    had_prefill = True
+                    msgs = msgs[:-1]
+            history = []
+            for m in msgs:
+                role = "user" if m["role"] == "user" else "model"
+                content = m["content"]
+                if isinstance(content, list):
+                    content = content[0].get("text", "") if content else ""
+                history.append({"role": role, "parts": [content]})
+            cfg = genai.types.GenerationConfig(max_output_tokens=max_tokens or 2048)
+            model_obj = genai.GenerativeModel(_GEMINI_MODEL_ID, system_instruction=system or None)
+            resp = model_obj.generate_content(history, generation_config=cfg)
+            text = (resp.text or "").strip()
+            # Strip ```json...``` fences se vierem
+            if text.startswith("```"):
+                text = text.lstrip("`")
+                if text.lower().startswith("json"):
+                    text = text[4:]
+                text = text.rstrip("`").strip()
+            # Server.py concatena "{" + raw quando há prefill — remover "{" inicial nesses casos
+            if had_prefill and text.startswith("{"):
+                text = text[1:]
+            return _GResp(text)
+
+    class _GAdapter:
+        def __init__(self):
+            self.messages = _GMessages()
+
+    anthropic_client = _GAdapter()
+    print(f"[Lead Machine] LLM provider: Gemini ({_GEMINI_MODEL_ID}) — shim de validação ativo", flush=True)
 
 MAX_QUESTIONS = 10  # do original (diagnostic-chat/index.ts:36, hard limit linha 66)
 
@@ -517,11 +587,17 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="Lead Machine Lite")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+# CORS restrito — ver CORS_ORIGINS no topo do arquivo.
+# Métodos e headers limitados ao que o frontend realmente usa.
+# allow_origin_regex captura subdomínios dinâmicos do trycloudflare.
+_has_wildcard = any("*" in o for o in CORS_ORIGINS)
+_origins_literal = [o for o in CORS_ORIGINS if "*" not in o]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=_origins_literal,
+    allow_origin_regex=r"https://.*\.trycloudflare\.com" if _has_wildcard else None,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Aluno-Token"],
     max_age=3600,
 )
 
@@ -549,7 +625,7 @@ def health() -> dict[str, bool]:
 
 @app.post("/lead/new")
 @limiter.limit("10/minute")
-async def lead_new(request: Request, body: LeadNewIn) -> dict[str, Any]:
+async def lead_new(request: Request, body: LeadNewIn = Body(...)) -> dict[str, Any]:
     lead_id = str(uuid.uuid4())
     lead_info = {
         "nome": body.nome.strip(),
@@ -600,7 +676,7 @@ async def lead_new(request: Request, body: LeadNewIn) -> dict[str, Any]:
 
 @app.post("/lead/answer")
 @limiter.limit("30/minute")
-async def lead_answer(request: Request, body: AnswerIn) -> dict[str, Any]:
+async def lead_answer(request: Request, body: AnswerIn = Body(...)) -> dict[str, Any]:
     lead_id = _validate_lead_id(body.lead_id)
     lead = load_lead(lead_id)
     if not lead:
@@ -860,7 +936,9 @@ def _lead_summary(lead: dict[str, Any]) -> dict[str, Any]:
 
 
 @app.get("/api/leads")
+@limiter.limit("60/minute")
 def api_list_leads(
+    request: Request,
     x_aluno_token: Optional[str] = Header(default=None),
     limit: int = Query(default=100, le=500, ge=1),
     offset: int = Query(default=0, ge=0),
@@ -902,7 +980,12 @@ def api_list_leads(
 
 
 @app.get("/api/lead/{lead_id}")
-def api_lead_detail(lead_id: str, x_aluno_token: Optional[str] = Header(default=None)) -> dict[str, Any]:
+@limiter.limit("60/minute")
+def api_lead_detail(
+    request: Request,
+    lead_id: str,
+    x_aluno_token: Optional[str] = Header(default=None),
+) -> dict[str, Any]:
     _check_aluno_token(x_aluno_token)
     lead_id = _validate_lead_id(lead_id)
     lead = load_lead(lead_id)
@@ -956,7 +1039,9 @@ def _lead_context_for_materials(lead: dict[str, Any]) -> str:
 
 
 @app.post("/lead/generate-copy")
+@limiter.limit("10/minute")
 async def lead_generate_copy(
+    request: Request,
     body: GenerateCopyIn,
     x_aluno_token: Optional[str] = Header(default=None),
 ) -> dict[str, Any]:
@@ -1018,7 +1103,9 @@ async def lead_generate_copy(
 
 
 @app.post("/lead/generate-kit")
+@limiter.limit("10/minute")
 async def lead_generate_kit(
+    request: Request,
     body: GenerateKitIn,
     x_aluno_token: Optional[str] = Header(default=None),
 ) -> dict[str, Any]:
@@ -1071,7 +1158,11 @@ async def lead_generate_kit(
 
 
 @app.get("/dashboard")
-def serve_dashboard(x_aluno_token: Optional[str] = Header(default=None)) -> FileResponse:
+@limiter.limit("60/minute")
+def serve_dashboard(
+    request: Request,
+    x_aluno_token: Optional[str] = Header(default=None),
+) -> FileResponse:
     _check_aluno_token(x_aluno_token)
     if not DASHBOARD_INDEX.exists():
         raise HTTPException(status_code=404, detail="dashboard_nao_encontrado")

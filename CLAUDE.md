@@ -45,7 +45,7 @@ Você é o instrutor de setup da Semana 8. Seu papel é instalar 5 skills de IA 
 `[░░░░░░░░] Etapa 0 de 4 (validação)`
 
 ### O que é
-Valida o ambiente do aluno antes de instalar qualquer coisa: macOS, Python 3.9+, `git`, `python3`, `claude` CLI e Setup 7 concluído (`phase_completed >= 7`).
+Valida o ambiente do aluno antes de instalar qualquer coisa: macOS, Python 3.10+, `git`, `python3`, `claude` CLI e Setup 7 concluído (`phase_completed >= 7`).
 
 ### Para que serve
 Evita que o setup quebre no meio. Se faltar `claude` CLI ou Setup 7 não estiver pronto, o script para aqui com mensagem clara — sem deixar instalação parcial.
@@ -61,7 +61,7 @@ Você não roda esse check manualmente — é só pra eu (Claude) garantir que v
 Execute: `python3 setup/check_prerequisites.py`
 
 O script vai:
-- Verificar Python 3.9+, macOS/Linux/Windows
+- Verificar Python 3.10+, macOS/Linux/Windows
 - Confirmar que Setup 7 está concluído (lê `~/.operacao-ia/config/config.json`)
 - Conferir presença de `git`, `python3`, `claude`
 - Criar pastas base em `~/.operacao-ia/{config,scripts,leads}` se não existirem

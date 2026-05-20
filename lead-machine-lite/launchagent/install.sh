@@ -178,10 +178,21 @@ chmod 600 "$ENV_FILE"
 printf "\n%b%bALUNO_TOKEN configurado.%b Sem ele, o dashboard ficaria aberto pra qualquer pessoa\n" "$C_YELLOW" "$C_BOLD" "$C_RESET"
 printf "   que descobrir a URL do tunnel. Token salvo em %s (chmod 600)\n\n" "$ENV_FILE"
 
-# Validação básica
-if grep -q "ANTHROPIC_API_KEY=sk-ant-\\.\\.\\." "$ENV_FILE" 2>/dev/null || \
-   ! grep -q "^ANTHROPIC_API_KEY=sk-" "$ENV_FILE" 2>/dev/null; then
-    msg_warn "ANTHROPIC_API_KEY parece não estar preenchido. Backend vai subir mas chamadas LLM vão falhar."
+# Validação de ANTHROPIC_API_KEY (formato real: sk-ant-api{XX}-{base64url, >= 30 chars})
+# Cobre: placeholder "sk-ant-...", "sk-ant-COLOQUE_SUA_CHAVE_AQUI", linha vazia, sem prefixo.
+ANTHROPIC_LINE="$(grep -E "^ANTHROPIC_API_KEY=" "$ENV_FILE" 2>/dev/null | head -1 || true)"
+ANTHROPIC_VAL="${ANTHROPIC_LINE#ANTHROPIC_API_KEY=}"
+if ! echo "$ANTHROPIC_VAL" | grep -qE "^sk-ant-api[0-9]+-[A-Za-z0-9_-]{30,}$"; then
+    msg_warn ""
+    msg_warn "ANTHROPIC_API_KEY não parece válida (formato esperado: sk-ant-api{XX}-{30+ chars})"
+    msg_warn ""
+    msg_warn "Atual:    ${ANTHROPIC_VAL:-(vazio)}"
+    msg_warn ""
+    msg_warn "AÇÃO: edite $ENV_FILE e cole a chave real de"
+    msg_warn "      https://console.anthropic.com/settings/keys"
+    msg_warn ""
+    msg_warn "Sem isso, backend sobe mas /lead/generate-* falha com 502 LLM error."
+    msg_warn "Depois de editar, restart: bash $SCRIPT_DIR/restart.sh"
 fi
 
 # ---------- 6. LaunchAgents ----------
