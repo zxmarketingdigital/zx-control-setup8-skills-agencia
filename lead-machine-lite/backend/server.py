@@ -86,65 +86,6 @@ if INSECURE_DEV_MODE:
 
 anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY) if ANTHROPIC_API_KEY else None
 
-# ─────────────────────────────────────────────────────────────
-# Validação local: shim Anthropic→Gemini (ativa quando GEMINI_API_KEY existe)
-# Remover antes de mergear pra alunos — é só pra validação no Mac do Rafael.
-# ─────────────────────────────────────────────────────────────
-_GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-if _GEMINI_API_KEY:
-    import google.generativeai as genai
-    genai.configure(api_key=_GEMINI_API_KEY)
-    _GEMINI_MODEL_ID = os.environ.get("GEMINI_MODEL", "gemini-2.0-flash-exp")
-
-    class _GBlock:
-        def __init__(self, text):
-            self.text = text
-            self.type = "text"
-
-    class _GResp:
-        def __init__(self, text):
-            self.content = [_GBlock(text)]
-            self.stop_reason = "end_turn"
-
-    class _GMessages:
-        def create(self, model=None, system=None, messages=None, max_tokens=None, **kw):
-            msgs = list(messages or [])
-            had_prefill = False
-            # Drop Anthropic prefill "{" no fim (Gemini não aceita)
-            if msgs and msgs[-1].get("role") == "assistant":
-                c = msgs[-1].get("content", "")
-                if isinstance(c, str) and c.strip() == "{":
-                    had_prefill = True
-                    msgs = msgs[:-1]
-            history = []
-            for m in msgs:
-                role = "user" if m["role"] == "user" else "model"
-                content = m["content"]
-                if isinstance(content, list):
-                    content = content[0].get("text", "") if content else ""
-                history.append({"role": role, "parts": [content]})
-            cfg = genai.types.GenerationConfig(max_output_tokens=max_tokens or 2048)
-            model_obj = genai.GenerativeModel(_GEMINI_MODEL_ID, system_instruction=system or None)
-            resp = model_obj.generate_content(history, generation_config=cfg)
-            text = (resp.text or "").strip()
-            # Strip ```json...``` fences se vierem
-            if text.startswith("```"):
-                text = text.lstrip("`")
-                if text.lower().startswith("json"):
-                    text = text[4:]
-                text = text.rstrip("`").strip()
-            # Server.py concatena "{" + raw quando há prefill — remover "{" inicial nesses casos
-            if had_prefill and text.startswith("{"):
-                text = text[1:]
-            return _GResp(text)
-
-    class _GAdapter:
-        def __init__(self):
-            self.messages = _GMessages()
-
-    anthropic_client = _GAdapter()
-    print(f"[Lead Machine] LLM provider: Gemini ({_GEMINI_MODEL_ID}) — shim de validação ativo", flush=True)
-
 MAX_QUESTIONS = 10  # do original (diagnostic-chat/index.ts:36, hard limit linha 66)
 
 # Cache em memória do /api/leads (TTL curto, invalidado em save_lead)
@@ -1042,7 +983,7 @@ def _lead_context_for_materials(lead: dict[str, Any]) -> str:
 @limiter.limit("10/minute")
 async def lead_generate_copy(
     request: Request,
-    body: GenerateCopyIn,
+    body: GenerateCopyIn = Body(...),
     x_aluno_token: Optional[str] = Header(default=None),
 ) -> dict[str, Any]:
     _check_aluno_token(x_aluno_token)
@@ -1106,7 +1047,7 @@ async def lead_generate_copy(
 @limiter.limit("10/minute")
 async def lead_generate_kit(
     request: Request,
-    body: GenerateKitIn,
+    body: GenerateKitIn = Body(...),
     x_aluno_token: Optional[str] = Header(default=None),
 ) -> dict[str, Any]:
     _check_aluno_token(x_aluno_token)

@@ -8,8 +8,6 @@ Compatível Python 3.10+ (backend Lead Machine + Pydantic v2 exigem 3.10).
 NUNCA usar type unions com `|` — usar Optional/List do typing.
 """
 
-from __future__ import annotations
-
 import json
 import os
 import platform
