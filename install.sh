@@ -85,33 +85,13 @@ else
   ok "cloudflared $(cloudflared --version 2>&1 | head -1) ✓"
 fi
 
-# .env
-step "Configurando .env do Lead Machine ..."
-ENV_FILE="$LML_DST/.env"
-if [ "$DRY_RUN" = false ] && [ ! -f "$ENV_FILE" ]; then
-  cp "$LML_SRC/.env.template" "$ENV_FILE" 2>/dev/null || cat > "$ENV_FILE" <<'ENVEOF'
-ANTHROPIC_API_KEY=sk-ant-COLOQUE_SUA_CHAVE_AQUI
-HOST=0.0.0.0
-PORT=8710
-ENVEOF
-  echo ""
-  echo "  ┌─────────────────────────────────────────────────────┐"
-  echo "  │  AÇÃO NECESSÁRIA: configure sua ANTHROPIC_API_KEY   │"
-  echo "  │  1. Acesse: console.anthropic.com                   │"
-  echo "  │  2. Copie sua API key                               │"
-  echo "  │  3. Edite: $ENV_FILE  │"
-  echo "  │  4. Substitua sk-ant-COLOQUE_SUA_CHAVE_AQUI         │"
-  echo "  └─────────────────────────────────────────────────────┘"
-  echo ""
-fi
-ok ".env configurado em $ENV_FILE"
-
-# LaunchAgent
-step "Instalando LaunchAgent (auto-start no boot) ..."
+# LaunchAgent — delega criação do .env (com ALUNO_TOKEN auto-gerado) e instalação dos plists
+# para o install.sh do launchagent, que escreve em ~/.zx-lead-machine/ (não em $LML_DST)
+step "Instalando backend + LaunchAgents (auto-start no boot) ..."
 if [ "$DRY_RUN" = false ]; then
   cd "$LML_DST/launchagent" && bash install.sh
 fi
-ok "LaunchAgent instalado"
+ok "Backend + LaunchAgents instalados em ~/.zx-lead-machine/"
 
 # ── Resumo final ─────────────────────────────────────────────────
 header "Instalação concluída!"
@@ -122,9 +102,9 @@ echo "    Lead Machine:   ~/projetos/lead-machine-lite/"
 echo "    LaunchAgents:   com.zxlab.lead-machine-lite + com.zxlab.lead-machine-lite-tunnel"
 echo ""
 echo "  Próximos passos:"
-echo "    1. Edite ~/projetos/lead-machine-lite/.env com sua ANTHROPIC_API_KEY"
+echo "    1. Edite ~/.zx-lead-machine/backend/.env com sua ANTHROPIC_API_KEY"
 echo "    2. No Claude Code, teste: /diagnostico-empreendedor"
-echo "    3. Abra o dashboard: http://localhost:8710/dashboard"
+echo "    3. Abra o dashboard: open \"\$(cat ~/.zx-lead-machine/dashboard-url.txt)\""
 echo "    4. Use /lead-machine-lite para gerenciar leads e o tunnel"
 echo ""
 if [ "$DRY_RUN" = true ]; then

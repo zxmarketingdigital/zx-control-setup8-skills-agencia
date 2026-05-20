@@ -6,18 +6,16 @@ Setup oficial da Semana 8 do ZX Control Scale. 5 ferramentas profissionais de IA
 
 - macOS (Linux/Windows funcionam parcialmente — sem LaunchAgents)
 - Setup 7 do ZX Control concluído (`phase_completed >= 7` em `~/.operacao-ia/config/config.json`)
-- Python 3.9+
-- Claude Code instalado e configurado
-- {'recurso': 'Claude Code CLI', 'pra_que_serve': 'rodar skills no terminal', 'como_obtem': 'claude.ai/code — pré-req do ZX Control'}
-- {'recurso': 'Python 3.10+', 'pra_que_serve': 'backend Lead Machine', 'como_obtem': 'brew install python3 (install.sh verifica)'}
-- {'recurso': 'cloudflared', 'pra_que_serve': 'tunnel público LP Lead Machine', 'como_obtem': 'brew install cloudflare/cloudflare/cloudflared (install.sh instala)'}
-- {'recurso': 'ANTHROPIC_API_KEY', 'pra_que_serve': 'LLM das skills', 'como_obtem': 'console.anthropic.com — instrução no install.sh'}
+- Python 3.10+ (backend Lead Machine exige 3.10; skills rodam em 3.9+) — `brew install python@3.12`
+- Claude Code CLI instalado e configurado (`claude.ai/code` — pré-req do ZX Control)
+- `cloudflared` pra tunnel público da LP — `brew install cloudflare/cloudflare/cloudflared` (o install.sh tenta instalar sozinho se faltar)
+- `ANTHROPIC_API_KEY` pra LLM das skills e do diagnóstico de leads — gera em `console.anthropic.com/settings/keys`
 
 ## Instalação
 
 ```bash
-git clone https://github.com/zxmarketingdigital/skills-agencia
-cd skills-agencia
+git clone https://github.com/zxmarketingdigital/zx-control-setup8-skills-agencia
+cd zx-control-setup8-skills-agencia
 claude
 ```
 
