@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.zxlab.lead-machine-lite</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>{HOME}/.zx-lead-machine/venv/bin/python</string>
+        <string>-m</string>
+        <string>uvicorn</string>
+        <string>server:app</string>
+        <string>--host</string>
+        <string>127.0.0.1</string>
+        <string>--port</string>
+        <string>8792</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>{HOME}/.zx-lead-machine/backend</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>{HOME}/.zx-lead-machine/venv/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>PYTHONUNBUFFERED</key>
+        <string>1</string>
+        <key>PORT</key>
+        <string>8792</string>
+        <key>LEADS_DIR</key>
+        <string>{HOME}/zx-leads</string>
+        <key>HOME</key>
+        <string>{HOME}</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>{HOME}/.zx-lead-machine/logs/backend.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>{HOME}/.zx-lead-machine/logs/backend.err.log</string>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <key>ProcessType</key>
+    <string>Interactive</string>
+</dict>
+</plist>

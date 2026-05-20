@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skills da Agência IA + Lead Machine Lite no seu Mac — Setup 8 ZX Control</title>
+  <!-- Force rebuild 2026-05-20 18:10 -->
+  <style>
+    :root {
+      --primary: #06B6D4;
+      --secondary: #0891b2;
+      --gradient-cta: linear-gradient(135deg, #06B6D4, #0891b2);
+      --bg: #0a0a0a;
+      --bg2: #111;
+      --text: #f5f5f5;
+      --text2: #bbb;
+      --text3: #888;
+      --border: rgba(255,255,255,0.08);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      padding: 32px 20px;
+    }
+    .container { max-width: 1100px; margin: 0 auto; }
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 32px; padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { font-size: 1.5rem; font-weight: 700; }
+    .badge {
+      background: var(--gradient-cta);
+      padding: 4px 12px; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600;
+    }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px;
+    }
+    .stat-label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+    .stat-sub { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
+    .section {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px;
+      margin-bottom: 20px;
+    }
+    .section h2 { font-size: 1.1rem; margin-bottom: 16px; color: var(--text); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
+    th { color: var(--text3); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .empty { color: var(--text3); padding: 16px; text-align: center; font-style: italic; }
+    .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; color: var(--text3); font-size: 0.8rem; }
+    .footer a { color: var(--primary); text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Skills da Agência IA + Lead Machine Lite no seu Mac</h1>
+      <span class="badge">Setup 8 · ZX Control Scale</span>
+    </header>
+
+    <!--
+      DADOS INLINE (NUNCA fetch() — dashboard pode ser aberto via file:// e CORS bloqueia).
+      Script Python parametriza esta variável no build.
+    -->
+    <script>
+      // Dados inline (nunca fetch() — file:// bloqueia CORS).
+      // tojson serializa dict Python como JSON válido (aspas duplas).
+      const _SETUP_DATA = "{}";
+    </script>
+
+    <div class="stats" id="statsContainer"></div>
+
+    <div class="footer">
+      Última atualização: <span id="lastUpdate">2026-05-20 18:10</span>
+      · ZX Control Scale
+      · <a href="https://zxlab.com.br/mission-control">mission-control</a>
+    </div>
+  </div>
+
+  <script>
+    // Render stats
+    const statsEl = document.getElementById('statsContainer');
+    (_SETUP_DATA.stats || []).forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'stat-card';
+      card.innerHTML = `
+        <div class="stat-label">${s.label}</div>
+        <div class="stat-value">${s.value}</div>
+        ${s.sub ? `<div class="stat-sub">${s.sub}</div>` : ''}
+      `;
+      statsEl.appendChild(card);
+    });
+
+    // Render tabelas (se houver)
+    Object.entries(_SETUP_DATA.tables || {}).forEach(([tableId, rows]) => {
+      const tbody = document.getElementById(tableId + 'Body');
+      if (!tbody) return;
+      if (!rows || rows.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="99" class="empty">Sem dados ainda — rode os scripts da primeira vez</td></tr>`;
+        return;
+      }
+      rows.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = row.map(c => `<td>${c}</td>`).join('');
+        tbody.appendChild(tr);
+      });
+    });
+  </script>
+</body>
+</html>

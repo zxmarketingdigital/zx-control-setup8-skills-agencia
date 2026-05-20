@@ -1,0 +1,34 @@
+.env
+.env.local
+*.env
+!.env.template
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+
+# macOS
+.DS_Store
+
+# Cloudflare Wrangler cache
+.wrangler/
+
+# Logs
+*.log
+logs/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Build output (se houver bundler)
+dist/
+build/

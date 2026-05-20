@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0D0D0D" />
+<meta name="description" content="Diagnóstico de IA para o seu negócio — entenda onde aplicar Inteligência Artificial para crescer." />
+<title>Diagnóstico de IA para o seu negócio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+<style>
+  :root {
+    --amber: #D97706;
+    --amber-light: #F59E0B;
+    --amber-bright: #FCD34D;
+    --amber-dark: #92400e;
+    --bg: #0D0D0D;
+    --bg-alt: #0A0A0A;
+    --surface: #1A1A1A;
+    --surface-2: #222222;
+    --border: #2A2A2A;
+    --border-light: #333333;
+    --text: #E2E8F0;
+    --text-secondary: #9CA3AF;
+    --text-muted: #6B7280;
+    --green: #4ADE80;
+    --red: #EF4444;
+    --shadow-glow: 0 0 0 1px rgba(217, 119, 6, 0.4), 0 8px 32px -8px rgba(217, 119, 6, 0.25);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at top, rgba(217, 119, 6, 0.08), transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(217, 119, 6, 0.04), transparent 50%);
+    background-attachment: fixed;
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    font-size: 16px;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 28px 20px 64px;
+  }
+
+  /* Header brand */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 36px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+  .brand-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 12px var(--amber);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 36px 32px;
+    box-shadow: 0 20px 60px -20px rgba(0,0,0,0.6);
+  }
+
+  @media (max-width: 600px) {
+    .page { padding: 20px 14px 48px; }
+    .card { padding: 26px 20px; border-radius: 12px; }
+  }
+
+  /* Typography */
+  h1, h2, h3 { color: #fff; margin: 0 0 12px; font-weight: 800; letter-spacing: -0.01em; }
+  h1 { font-size: 1.85rem; line-height: 1.2; }
+  h2 { font-size: 1.45rem; line-height: 1.25; }
+  h3 { font-size: 1.05rem; }
+  p { margin: 0 0 16px; color: var(--text); }
+  .muted { color: var(--text-secondary); font-size: 0.95rem; }
+  .micro { font-size: 0.8rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .eyebrow {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber-bright);
+    padding: 5px 10px;
+    border: 1px solid rgba(217, 119, 6, 0.35);
+    background: rgba(217, 119, 6, 0.08);
+    border-radius: 6px;
+    margin-bottom: 18px;
+  }
+
+  /* Forms */
+  .field { margin-bottom: 18px; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 520px) { .field-row { grid-template-columns: 1fr; gap: 0; } }
+  .field-row .field { margin-bottom: 18px; }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: var(--text);
+  }
+  label .opt { color: var(--text-muted); font-weight: 400; font-size: 0.78rem; margin-left: 4px; }
+
+  input[type=text], input[type=email], input[type=tel], input[type=url], textarea, select {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 13px 14px;
+    background: var(--bg-alt);
+    color: var(--text);
+    border: 1px solid var(--border-light);
+    border-radius: 9px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  textarea {
+    min-height: 130px;
+    resize: vertical;
+    line-height: 1.55;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.18);
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); }
+
+  .hint {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* Button */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 15px 24px;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: #0D0D0D;
+    background: linear-gradient(135deg, var(--amber-light) 0%, var(--amber) 100%);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.15s, opacity 0.15s;
+    box-shadow: 0 4px 16px -4px rgba(217, 119, 6, 0.5);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -6px rgba(217, 119, 6, 0.6); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+    box-shadow: none;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--amber); background: rgba(217, 119, 6, 0.05); }
+
+  /* Progress */
+  .progress-wrap {
+    margin-bottom: 24px;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .progress-meta .company { color: var(--amber-bright); }
+  .progress-bar {
+    height: 6px;
+    background: var(--bg-alt);
+    border-radius: 999px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--amber), var(--amber-bright));
+    border-radius: 999px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  /* Question */
+  .question-block {
+    margin-bottom: 22px;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .question-title {
+    font-size: 1.25rem;
+    color: #fff;
+    font-weight: 700;
+    margin: 0 0 8px;
+    line-height: 1.4;
+  }
+
+  /* Loader / Spinner */
+  .loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 28px 0 8px;
+  }
+  .spinner {
+    width: 56px;
+    height: 56px;
+    border: 4px solid var(--border);
+    border-top-color: var(--amber);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 22px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader h2 { margin-bottom: 8px; }
+  .loader p { color: var(--text-secondary); max-width: 420px; }
+  .loader-steps {
+    margin-top: 26px;
+    text-align: left;
+    width: 100%;
+    max-width: 360px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .loader-steps div { padding: 4px 0; }
+  .loader-steps div.active { color: var(--amber-bright); }
+  .loader-steps div.done { color: var(--green); }
+
+  /* Alerts */
+  .alert {
+    padding: 14px 16px;
+    border-radius: 9px;
+    margin-bottom: 18px;
+    font-size: 0.9rem;
+    border: 1px solid;
+  }
+  .alert-error {
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #FCA5A5;
+  }
+  .alert-error strong { color: #FECACA; }
+  .alert-info {
+    background: rgba(217, 119, 6, 0.08);
+    border-color: rgba(217, 119, 6, 0.3);
+    color: var(--amber-bright);
+    transition: opacity 0.4s ease;
+  }
+  .alert-info strong { color: #fff; }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* Result */
+  .result-section {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-section:last-child { border-bottom: none; padding-bottom: 0; }
+  .result-section h2 {
+    color: var(--amber-bright);
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 14px;
+  }
+  .md-body h1 { font-size: 1.5rem; color: #fff; margin: 24px 0 12px; }
+  .md-body h2 { font-size: 1.2rem; color: #fff; margin: 22px 0 10px; text-transform: none; letter-spacing: normal; font-family: 'Inter', sans-serif; }
+  .md-body h3 { font-size: 1.02rem; color: var(--amber-bright); margin: 18px 0 8px; }
+  .md-body p { color: var(--text); line-height: 1.7; margin: 0 0 14px; }
+  .md-body ul, .md-body ol { padding-left: 22px; color: var(--text); line-height: 1.7; margin: 0 0 14px; }
+  .md-body li { margin-bottom: 6px; }
+  .md-body strong { color: #fff; font-weight: 700; }
+  .md-body em { color: var(--amber-bright); font-style: italic; }
+  .md-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: var(--bg-alt);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .md-body blockquote {
+    border-left: 3px solid var(--amber);
+    padding: 6px 16px;
+    margin: 16px 0;
+    color: var(--text-secondary);
+    background: rgba(217, 119, 6, 0.04);
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* CTA final */
+  .cta-final {
+    margin-top: 32px;
+    padding: 28px 24px;
+    background: linear-gradient(135deg, rgba(217, 119, 6, 0.12), rgba(217, 119, 6, 0.04));
+    border: 1px solid rgba(217, 119, 6, 0.3);
+    border-radius: 12px;
+    text-align: center;
+  }
+  .cta-final h3 {
+    font-size: 1.2rem;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .cta-final p { color: var(--text-secondary); margin-bottom: 18px; }
+  .cta-final a.btn { text-decoration: none; max-width: 320px; margin: 0 auto; }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .text-center { text-align: center; }
+  .mt-md { margin-top: 18px; }
+  .row-actions { display: flex; gap: 12px; margin-top: 8px; }
+  .row-actions .btn { flex: 1; }
+
+  /* Footer */
+  .footer {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.06em;
+  }
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="brand">
+    <span class="brand-dot" aria-hidden="true"></span>
+    <span>Diagnóstico de IA</span>
+  </div>
+
+  <!-- ============ SCREEN 1: LEAD INTAKE ============ -->
+  <section id="screen-intake" class="card">
+    <span class="eyebrow">Análise gratuita</span>
+    <h1>Descubra onde aplicar IA no seu negócio</h1>
+    <p class="muted">Responda algumas perguntas rápidas e receba um diagnóstico personalizado com plano de ação para usar Inteligência Artificial na sua empresa.</p>
+
+    <div id="intake-expired" class="alert alert-info hidden" role="status"></div>
+    <div id="intake-alert" class="alert alert-error hidden" role="alert"></div>
+
+    <form id="form-intake" novalidate>
+      <div class="field-row">
+        <div class="field">
+          <label for="f-nome">Seu nome</label>
+          <input type="text" id="f-nome" name="nome" required autocomplete="name" placeholder="Como podemos te chamar?" />
+        </div>
+        <div class="field">
+          <label for="f-email">Email</label>
+          <input type="email" id="f-email" name="email" required autocomplete="email" placeholder="voce@empresa.com" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-empresa">Empresa <span class="opt">(opcional)</span></label>
+          <input type="text" id="f-empresa" name="empresa" autocomplete="organization" placeholder="Nome da empresa" />
+        </div>
+        <div class="field">
+          <label for="f-telefone">WhatsApp <span class="opt">(opcional)</span></label>
+          <input type="tel" id="f-telefone" name="telefone" autocomplete="tel" placeholder="(85) 99999-9999" inputmode="tel" />
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-segmento">Segmento <span class="opt">(opcional)</span></label>
+          <input type="text" id="f-segmento" name="segmento" placeholder="Ex: e-commerce, advocacia…" />
+        </div>
+        <div class="field">
+          <label for="f-website">Website <span class="opt">(opcional)</span></label>
+          <input type="url" id="f-website" name="website" autocomplete="url" placeholder="https://" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-instagram">Instagram <span class="opt">(opcional)</span></label>
+        <input type="text" id="f-instagram" name="instagram" placeholder="@usuario" />
+      </div>
+
+      <button type="submit" class="btn" id="btn-intake">
+        <span class="label">Começar diagnóstico</span>
+      </button>
+      <p class="micro text-center mt-md">Leva ~5 minutos. Seus dados ficam protegidos.</p>
+    </form>
+  </section>
+
+  <!-- ============ SCREEN 2: Q&A ============ -->
+  <section id="screen-qa" class="card hidden">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span class="company" id="qa-company">—</span>
+        <span><span id="qa-current">0</span>/<span id="qa-total">?</span></span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="qa-fill"></div></div>
+    </div>
+
+    <div id="qa-alert" class="alert alert-error hidden" role="alert"></div>
+
+    <div class="question-block" aria-live="polite">
+      <h2 class="question-title" id="qa-question">Carregando pergunta…</h2>
+      <p class="hint hidden" id="qa-hint"></p>
+    </div>
+
+    <form id="form-qa" novalidate>
+      <div class="field">
+        <label for="f-answer" class="sr-only">Sua resposta</label>
+        <textarea id="f-answer" name="answer" required placeholder="Escreva sua resposta aqui…"></textarea>
+      </div>
+      <button type="submit" class="btn" id="btn-qa">
+        <span class="label">Próxima pergunta</span>
+      </button>
+    </form>
+  </section>
+
+  <!-- ============ SCREEN 3: PREPARING REPORT ============ -->
+  <section id="screen-loading" class="card hidden">
+    <div class="loader">
+      <div class="spinner" aria-hidden="true"></div>
+      <h2>Preparando seu diagnóstico</h2>
+      <p>Estamos analisando suas respostas e gerando um diagnóstico personalizado com plano de ação. Isso leva entre 30 e 90 segundos.</p>
+      <div class="loader-steps" aria-live="polite" id="loader-steps">
+        <div class="done">✓ Respostas recebidas</div>
+        <div class="active" id="step-analyze">⟳ Analisando contexto do negócio…</div>
+        <div id="step-generate">○ Gerando diagnóstico</div>
+        <div id="step-plan">○ Montando plano de ação</div>
+      </div>
+    </div>
+    <div id="loading-alert" class="alert alert-error hidden mt-md" role="alert"></div>
+  </section>
+
+  <!-- ============ SCREEN 4: RESULT ============ -->
+  <section id="screen-result" class="card hidden">
+    <span class="eyebrow">Diagnóstico pronto</span>
+    <h1 id="result-title">Seu diagnóstico de IA</h1>
+    <p class="muted" id="result-subtitle">Aqui está o diagnóstico personalizado para o seu negócio, com plano de ação para os próximos 90 dias.</p>
+
+    <div class="result-section" id="result-diagnostico-wrap">
+      <h2>Diagnóstico</h2>
+      <div class="md-body" id="result-diagnostico"></div>
+    </div>
+
+    <div class="result-section" id="result-plano-wrap">
+      <h2>Plano de Ação</h2>
+      <div class="md-body" id="result-plano"></div>
+    </div>
+
+    <div class="cta-final" id="cta-final">
+      <h3>Quer conversar sobre como aplicar isso?</h3>
+      <p>Eu posso te ajudar a transformar este diagnóstico em resultado real.</p>
+      <a href="#" class="btn" id="cta-link" target="_blank" rel="noopener">Falar agora</a>
+    </div>
+  </section>
+
+  <div class="footer">
+    Powered by ZX LAB · Lead Machine Lite
+  </div>
+</main>
+
+<script>
+  // ====== CONFIG ======
+  const API_BASE = (window.location.protocol === 'file:' || window.location.origin === 'null')
+    ? 'http://localhost:8792'
+    : window.location.origin;
+
+  const STORAGE_KEY = 'lead_machine_lite_current';
+  const POLL_MAX_ATTEMPTS = 36; // ~3min com backoff exponencial
+  const FETCH_TIMEOUT_MS = 30000; // 30s default — LLM pode demorar
+  const SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12h
+
+  // Configure marked uma vez no boot
+  if (typeof marked !== 'undefined' && marked.use) {
+    try { marked.use({ mangle: false, headerIds: false, breaks: true, gfm: true }); } catch {}
+  }
+
+  function safeMd(s) {
+    if (typeof marked === 'undefined' || typeof DOMPurify === 'undefined') {
+      return '<p>' + escapeHtml(s || '').replace(/\n\n+/g, '</p><p>').replace(/\n/g, '<br>') + '</p>';
+    }
+    return DOMPurify.sanitize(marked.parse(s || ''), { USE_PROFILES: { html: true } });
+  }
+
+  function nextPollDelay(attempt) {
+    const seq = [3, 5, 8, 13, 21, 30];
+    return seq[Math.min(attempt, seq.length - 1)] * 1000;
+  }
+
+  function extractDetail(detail, fallback) {
+    if (typeof detail === 'string') return detail;
+    if (detail && typeof detail === 'object') {
+      return detail.error || detail.message || detail.detail || fallback;
+    }
+    return fallback;
+  }
+
+  function isNetworkError(e) {
+    if (!e) return false;
+    if (e.name === 'AbortError') return true;
+    if (e instanceof TypeError) return true;
+    const m = String(e.message || '').toLowerCase();
+    return m.includes('fetch') || m.includes('network') || m.includes('failed to fetch');
+  }
+
+  // ====== STATE ======
+  const state = {
+    lead_id: null,
+    company: '—',
+    current_question: null,
+    progress: { current: 0, total: 10 },
+    contact: parseContactFromQuery(),
+  };
+
+  // ====== DOM ======
+  const $ = (id) => document.getElementById(id);
+  const screens = {
+    intake: $('screen-intake'),
+    qa: $('screen-qa'),
+    loading: $('screen-loading'),
+    result: $('screen-result'),
+  };
+
+  function show(name) {
+    Object.entries(screens).forEach(([k, el]) => el.classList.toggle('hidden', k !== name));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setAlert(elId, msg) {
+    const el = $(elId);
+    if (!msg) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+    el.classList.remove('hidden');
+    el.innerHTML = `<strong>Erro:</strong> ${escapeHtml(msg)}`;
+  }
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function parseContactFromQuery() {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        contato: p.get('contato') || p.get('wa') || p.get('email') || '',
+        nome: p.get('aluno') || '',
+      };
+    } catch { return { contato: '', nome: '' }; }
+  }
+
+  function setBtnLoading(btn, loading, loadingText, defaultText) {
+    if (!btn) return;
+    const labelSpan = btn.querySelector('.label');
+    if (loading) {
+      btn.disabled = true;
+      if (labelSpan) labelSpan.textContent = loadingText || 'Enviando…';
+    } else {
+      btn.disabled = false;
+      if (labelSpan && defaultText) labelSpan.textContent = defaultText;
+    }
+  }
+
+  async function fetchWithTimeout(url, options = {}, ms = FETCH_TIMEOUT_MS) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    try {
+      return await fetch(url, { ...options, signal: ctrl.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function api(path, opts = {}) {
+    const url = API_BASE + path;
+    let resp;
+    try {
+      resp = await fetchWithTimeout(url, {
+        method: opts.method || 'GET',
+        headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+        body: opts.body ? JSON.stringify(opts.body) : undefined,
+      }, opts.timeout || FETCH_TIMEOUT_MS);
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        const e = new Error('Tempo esgotado. A pergunta pode estar demorando mais que o normal — tente de novo em 30s.');
+        e.name = 'AbortError';
+        throw e;
+      }
+      throw err;
+    }
+    let data;
+    try { data = await resp.json(); } catch { data = null; }
+    if (!resp.ok) {
+      const rawDetail = data && (data.detail ?? data.message ?? data.error);
+      const msg = extractDetail(rawDetail, `HTTP ${resp.status}`);
+      const e = new Error(msg);
+      e.status = resp.status;
+      e.detail = rawDetail;
+      throw e;
+    }
+    return data;
+  }
+
+  // ====== STORAGE ======
+  function saveSession() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        lead_id: state.lead_id,
+        company: state.company,
+        progress: state.progress,
+        current_question: state.current_question,
+        saved_at: Date.now(),
+      }));
+    } catch {}
+  }
+  let sessionExpiredOnBoot = false;
+  function loadSession() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const data = JSON.parse(raw);
+      if (!data.saved_at || (Date.now() - data.saved_at) > SESSION_TTL_MS) {
+        localStorage.removeItem(STORAGE_KEY);
+        sessionExpiredOnBoot = !!data.lead_id;
+        return null;
+      }
+      return data;
+    } catch { return null; }
+  }
+  function clearSession() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
+  }
+
+  // ====== SCREEN 1: INTAKE ======
+  const _submitGuard = { intake: false, qa: false };
+  $('form-intake').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (_submitGuard.intake) return;
+    _submitGuard.intake = true;
+    setAlert('intake-alert', '');
+    const btn = $('btn-intake');
+    const form = ev.target;
+
+    try {
+      const body = {
+        nome: form.nome.value.trim(),
+        email: form.email.value.trim(),
+        empresa: form.empresa.value.trim() || undefined,
+        telefone: form.telefone.value.trim() || undefined,
+        segmento: form.segmento.value.trim() || undefined,
+        website: form.website.value.trim() || undefined,
+        instagram: form.instagram.value.trim() || undefined,
+      };
+
+      if (!body.nome) { setAlert('intake-alert', 'Preencha seu nome.'); return; }
+      if (!body.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email)) {
+        setAlert('intake-alert', 'Email inválido.'); return;
+      }
+
+      setBtnLoading(btn, true, 'Iniciando…');
+      try {
+        const data = await api('/lead/new', { method: 'POST', body });
+        state.lead_id = data.lead_id;
+        state.company = body.empresa || body.nome.split(' ')[0] || 'sua empresa';
+        state.current_question = data.first_question;
+        state.progress = data.progress || { current: 0, total: 10 };
+        saveSession();
+        renderQuestion();
+        show('qa');
+      } catch (e) {
+        const msg = isNetworkError(e)
+          ? 'Conexão instável. Recarregue em alguns segundos.'
+          : extractDetail(e.detail, e.message || 'Não foi possível iniciar. Tente novamente.');
+        setAlert('intake-alert', msg);
+      } finally {
+        setBtnLoading(btn, false, null, 'Começar diagnóstico');
+      }
+    } finally {
+      _submitGuard.intake = false;
+    }
+  });
+
+  // ====== SCREEN 2: Q&A ======
+  function renderQuestion() {
+    const q = state.current_question;
+    $('qa-company').textContent = state.company;
+    $('qa-current').textContent = String((state.progress?.current ?? 0));
+    $('qa-total').textContent = String((state.progress?.total ?? 10));
+    const pct = state.progress?.total ? Math.min(100, (state.progress.current / state.progress.total) * 100) : 0;
+    $('qa-fill').style.width = pct + '%';
+
+    if (!q) {
+      $('qa-question').textContent = 'Carregando…';
+      $('qa-hint').classList.add('hidden');
+      return;
+    }
+    $('qa-question').textContent = q.text || q.question_label || 'Pergunta';
+    const hintEl = $('qa-hint');
+    if (q.optional_hint) {
+      hintEl.textContent = q.optional_hint;
+      hintEl.classList.remove('hidden');
+    } else {
+      hintEl.classList.add('hidden');
+    }
+    const ta = $('f-answer');
+    ta.value = '';
+    setTimeout(() => ta.focus(), 100);
+  }
+
+  $('form-qa').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    if (_submitGuard.qa) return;
+    _submitGuard.qa = true;
+    setAlert('qa-alert', '');
+    const btn = $('btn-qa');
+    try {
+      const answer = $('f-answer').value.trim();
+      if (!answer) { setAlert('qa-alert', 'Escreva uma resposta antes de continuar.'); return; }
+      if (!state.lead_id || !state.current_question) {
+        setAlert('qa-alert', 'Sessão expirada. Recarregue a página.'); return;
+      }
+
+      setBtnLoading(btn, true, 'Enviando…');
+      try {
+        const data = await api('/lead/answer', {
+          method: 'POST',
+          body: {
+            lead_id: state.lead_id,
+            question_key: state.current_question.question_key,
+            answer,
+          },
+        });
+
+        state.progress = data.progress || state.progress;
+
+        if (data.done) {
+          state.current_question = null;
+          saveSession();
+          show('loading');
+          startPolling();
+          return;
+        }
+
+        if (data.next_question) {
+          state.current_question = data.next_question;
+          saveSession();
+          renderQuestion();
+        } else {
+          show('loading');
+          startPolling();
+        }
+      } catch (e) {
+        const msg = isNetworkError(e)
+          ? 'Conexão instável. Sua resposta não foi enviada — tente de novo.'
+          : extractDetail(e.detail, e.message || 'Falha ao enviar resposta.');
+        setAlert('qa-alert', msg);
+      } finally {
+        setBtnLoading(btn, false, null, 'Próxima pergunta');
+      }
+    } finally {
+      _submitGuard.qa = false;
+    }
+  });
+
+  // ====== SCREEN 3: POLLING ======
+  let pollTimer = null;
+  let pollAttempts = 0;
+
+  function startPolling() {
+    pollAttempts = 0;
+    setAlert('loading-alert', '');
+    advanceLoaderStep('step-analyze', 'active');
+    pollOnce();
+  }
+  function stopPolling() {
+    if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+  }
+  function advanceLoaderStep(id, cls) {
+    const el = $(id);
+    if (!el) return;
+    el.classList.remove('active', 'done');
+    if (cls) el.classList.add(cls);
+    if (cls === 'done') {
+      el.textContent = '✓ ' + el.textContent.replace(/^[✓⟳○]\s*/, '');
+    } else if (cls === 'active') {
+      el.textContent = '⟳ ' + el.textContent.replace(/^[✓⟳○]\s*/, '');
+    }
+  }
+
+  async function pollOnce() {
+    pollAttempts += 1;
+    try {
+      const data = await api('/lead/result/' + encodeURIComponent(state.lead_id));
+      if (data.status === 'ready') {
+        advanceLoaderStep('step-analyze', 'done');
+        advanceLoaderStep('step-generate', 'done');
+        advanceLoaderStep('step-plan', 'done');
+        renderResult(data);
+        show('result');
+        clearSession();
+        return;
+      }
+      if (data.status === 'error') {
+        const errorMsg = extractDetail(data.detail, 'Não foi possível gerar o diagnóstico. Tente recarregar a página em alguns minutos.');
+        setAlert('loading-alert', errorMsg);
+        return;
+      }
+      // pending / in_progress — update visual steps over time
+      if (pollAttempts === 4) advanceLoaderStep('step-generate', 'active');
+      if (pollAttempts === 10) advanceLoaderStep('step-generate', 'done');
+      if (pollAttempts === 11) advanceLoaderStep('step-plan', 'active');
+    } catch (e) {
+      // Soft-retry on transient errors
+      if (pollAttempts >= POLL_MAX_ATTEMPTS) {
+        const errorMsg = isNetworkError(e)
+          ? 'Conexão instável. Recarregue a página em alguns segundos.'
+          : (e.message || 'Tempo esgotado aguardando o resultado.');
+        setAlert('loading-alert', errorMsg);
+        return;
+      }
+    }
+
+    if (pollAttempts >= POLL_MAX_ATTEMPTS) {
+      setAlert('loading-alert', 'O diagnóstico está demorando mais que o esperado. Recarregue a página em alguns minutos.');
+      return;
+    }
+    pollTimer = setTimeout(pollOnce, nextPollDelay(pollAttempts));
+  }
+
+  // ====== SCREEN 4: RESULT ======
+  function renderResult(data) {
+    const diag = (data.diagnostico_md || '').trim();
+    const plano = (data.plano_md || '').trim();
+
+    if (diag) {
+      $('result-diagnostico').innerHTML = safeMd(diag);
+      $('result-diagnostico-wrap').classList.remove('hidden');
+    } else {
+      $('result-diagnostico-wrap').classList.add('hidden');
+    }
+    if (plano) {
+      $('result-plano').innerHTML = safeMd(plano);
+      $('result-plano-wrap').classList.remove('hidden');
+    } else {
+      $('result-plano-wrap').classList.add('hidden');
+    }
+
+    // CTA: build link from query param ?contato=... (email or WhatsApp digits)
+    const cta = $('cta-link');
+    const ctaWrap = $('cta-final');
+    const c = (state.contact?.contato || '').trim();
+    if (!c) {
+      ctaWrap.classList.add('hidden');
+    } else if (c.includes('@')) {
+      cta.href = 'mailto:' + encodeURIComponent(c) + '?subject=' + encodeURIComponent('Diagnóstico de IA — vamos conversar?');
+      cta.textContent = 'Enviar email';
+    } else {
+      const digits = c.replace(/\D+/g, '');
+      cta.href = 'https://wa.me/' + digits + '?text=' + encodeURIComponent('Olá! Acabei de receber o diagnóstico de IA e quero conversar sobre próximos passos.');
+      cta.textContent = 'Falar no WhatsApp';
+    }
+  }
+
+  // ====== RESUME SESSION ======
+  function showExpiredBanner() {
+    const el = $('intake-expired');
+    if (!el) return;
+    el.innerHTML = '<strong>Sua sessão anterior expirou.</strong> Pode começar de novo abaixo.';
+    el.classList.remove('hidden');
+    setTimeout(() => {
+      el.style.opacity = '0';
+      setTimeout(() => { el.classList.add('hidden'); el.style.opacity = ''; }, 450);
+    }, 8000);
+  }
+
+  (function init() {
+    const saved = loadSession();
+    if (!saved || !saved.lead_id) {
+      if (sessionExpiredOnBoot) showExpiredBanner();
+      return;
+    }
+
+    state.lead_id = saved.lead_id;
+    state.company = saved.company || '—';
+    state.progress = saved.progress || { current: 0, total: 10 };
+    state.current_question = saved.current_question || null;
+
+    api('/lead/status/' + encodeURIComponent(saved.lead_id))
+      .then((s) => {
+        if (s.status === 'ready') {
+          show('loading');
+          startPolling();
+        } else if (s.status === 'pending' || s.status === 'error') {
+          show('loading');
+          startPolling();
+        } else {
+          if (state.current_question) {
+            renderQuestion();
+            show('qa');
+          } else {
+            clearSession();
+          }
+        }
+      })
+      .catch((err) => {
+        // 404 → lead realmente não existe, limpar; rede/timeout → preservar sessão
+        if (err && err.status === 404) {
+          clearSession();
+          return;
+        }
+        if (isNetworkError(err)) {
+          setAlert('intake-alert', 'Conexão instável. Recarregue em alguns segundos para continuar de onde parou.');
+          return;
+        }
+        // Outros erros HTTP (5xx etc) — preservar sessão, mostrar aviso
+        setAlert('intake-alert', 'Não conseguimos retomar sua sessão agora. Recarregue em alguns segundos.');
+      });
+  })();
+</script>
+</body>
+</html>

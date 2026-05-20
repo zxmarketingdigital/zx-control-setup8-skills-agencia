@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.zxlab.lead-machine-lite-tunnel</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>exec cloudflared tunnel --no-autoupdate --url http://localhost:8792</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>{HOME}/.zx-lead-machine</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>HOME</key>
+        <string>{HOME}</string>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>{HOME}/.zx-lead-machine/logs/tunnel.out.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>{HOME}/.zx-lead-machine/logs/tunnel.err.log</string>
+
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>ThrottleInterval</key>
+    <integer>15</integer>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

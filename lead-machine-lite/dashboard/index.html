@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lead Machine Lite — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+<style>
+  :root{
+    --amber:#D97706;
+    --amber-2:#B45309;
+    --amber-soft:#FEF3C7;
+    --ink:#111827;
+    --ink-2:#374151;
+    --muted:#6B7280;
+    --line:#E5E7EB;
+    --bg:#F9FAFB;
+    --panel:#FFFFFF;
+    --green:#059669;
+    --green-soft:#D1FAE5;
+    --red:#DC2626;
+    --red-soft:#FEE2E2;
+    --yellow:#CA8A04;
+    --yellow-soft:#FEF9C3;
+    --blue:#2563EB;
+    --blue-soft:#DBEAFE;
+    --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5}
+  a{color:var(--amber);text-decoration:none}
+  a:hover{text-decoration:underline}
+  button{font-family:inherit;cursor:pointer}
+  button:disabled{cursor:not-allowed;opacity:.55}
+
+  /* ── Header ── */
+  header{
+    position:sticky;top:0;z-index:10;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;background:#fff;border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;letter-spacing:-.01em}
+  .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--amber)}
+  .logo .sub{font-weight:500;color:var(--muted);font-size:12px;margin-left:6px}
+  .header-right{display:flex;align-items:center;gap:14px;font-size:13px;color:var(--muted)}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:var(--amber-soft);color:var(--amber-2);font-weight:600;font-size:12px}
+
+  /* ── Layout ── */
+  .layout{display:grid;grid-template-columns:380px 1fr;gap:0;min-height:calc(100vh - 57px)}
+  .sidebar{border-right:1px solid var(--line);background:#fff;display:flex;flex-direction:column;max-height:calc(100vh - 57px);overflow:hidden}
+  .filter-bar{display:flex;gap:6px;padding:12px 14px;border-bottom:1px solid var(--line);overflow-x:auto}
+  .chip{flex:none;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-size:12px;font-weight:600}
+  .chip.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .list{flex:1;overflow-y:auto;padding:8px}
+  .lead-card{
+    padding:12px 12px;margin-bottom:6px;border-radius:10px;border:1px solid transparent;
+    background:transparent;cursor:pointer;transition:all .12s ease;
+  }
+  .lead-card:hover{background:#FAFAFA;border-color:var(--line)}
+  .lead-card.active{background:var(--amber-soft);border-color:var(--amber)}
+  .lead-card .top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+  .lead-card .nome{font-weight:700;font-size:14px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lead-card .empresa{font-size:12px;color:var(--muted);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lead-card .meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted)}
+  .badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+  .badge.ready{background:var(--green-soft);color:var(--green)}
+  .badge.in_progress{background:var(--blue-soft);color:var(--blue)}
+  .badge.pending{background:var(--yellow-soft);color:var(--yellow)}
+  .badge.error{background:var(--red-soft);color:var(--red)}
+  .empty{padding:40px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* ── Detail ── */
+  .detail{padding:24px 28px;overflow-y:auto;max-height:calc(100vh - 57px)}
+  .placeholder{display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:14px;text-align:center;padding:60px}
+  .placeholder .big{font-size:28px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-.02em}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:14px 0 22px}
+  .info-cell{padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:8px}
+  .info-cell .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600;margin-bottom:2px}
+  .info-cell .v{font-size:13px;color:var(--ink);font-weight:500;word-break:break-word}
+  .section{margin-bottom:28px}
+  .section h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .section h2::after{content:'';flex:1;height:1px;background:var(--line)}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+  .panel.markdown{padding:22px 24px}
+  .qa-list{display:flex;flex-direction:column;gap:10px}
+  .qa{padding:10px 12px;background:#FAFAFA;border-radius:8px;border:1px solid var(--line)}
+  .qa .q{font-weight:600;color:var(--ink-2);font-size:13px;margin-bottom:4px}
+  .qa .a{color:var(--ink);font-size:13px}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .row .grow{flex:1}
+  select,input[type=text]{
+    font-family:inherit;font-size:13px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);min-width:0;
+  }
+  select:focus,input:focus{outline:none;border-color:var(--amber);box-shadow:0 0 0 3px var(--amber-soft)}
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:9px 16px;border-radius:8px;border:1px solid var(--amber);background:var(--amber);color:#fff;font-weight:600;font-size:13px;
+    transition:all .12s;
+  }
+  .btn:hover:not(:disabled){background:var(--amber-2);border-color:var(--amber-2)}
+  .btn.ghost{background:#fff;color:var(--amber);}
+  .btn.ghost:hover:not(:disabled){background:var(--amber-soft)}
+  .btn.subtle{background:#fff;color:var(--ink-2);border-color:var(--line)}
+  .btn.subtle:hover:not(:disabled){background:#FAFAFA}
+  .spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
+  .btn.ghost .spinner,.btn.subtle .spinner{border-color:rgba(217,119,6,.3);border-top-color:var(--amber)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .markdown-body{font-size:14px;line-height:1.65;color:var(--ink)}
+  .markdown-body h1{font-size:22px;font-weight:800;margin:0 0 14px;letter-spacing:-.02em}
+  .markdown-body h2{font-size:17px;font-weight:700;margin:22px 0 10px;color:var(--ink);text-transform:none;letter-spacing:-.01em}
+  .markdown-body h2::after{display:none}
+  .markdown-body h3{font-size:15px;font-weight:700;margin:18px 0 8px}
+  .markdown-body p{margin:0 0 12px}
+  .markdown-body ul,.markdown-body ol{margin:0 0 12px;padding-left:22px}
+  .markdown-body li{margin-bottom:4px}
+  .markdown-body strong{color:var(--ink);font-weight:700}
+  .markdown-body code{font-family:var(--mono);font-size:12px;background:#F3F4F6;padding:1px 6px;border-radius:4px}
+  .markdown-body pre{background:#0F172A;color:#E2E8F0;padding:14px 16px;border-radius:8px;overflow-x:auto;font-family:var(--mono);font-size:12px}
+  .markdown-body blockquote{border-left:3px solid var(--amber);padding:4px 0 4px 14px;color:var(--muted);margin:0 0 12px}
+
+  .material-output{margin-top:14px;padding:18px 20px;background:#FAFAFA;border:1px dashed var(--line);border-radius:10px;min-height:60px;position:relative}
+  .material-output.empty-state{color:var(--muted);font-size:13px;text-align:center;padding:30px;font-style:italic}
+  .material-output .copy-btn{position:absolute;top:10px;right:10px;font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink-2);font-weight:600}
+  .material-output .copy-btn:hover{background:var(--amber-soft);color:var(--amber-2);border-color:var(--amber)}
+  .material-output .copy-btn.copied{background:var(--green-soft);color:var(--green);border-color:var(--green)}
+
+  .toast{
+    position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;
+    font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:100;opacity:0;transform:translateY(10px);transition:all .2s;
+  }
+  .toast.show{opacity:1;transform:translateY(0)}
+  .toast.error{background:var(--red)}
+  .toast.success{background:var(--green)}
+
+  /* ── Modal de token ── */
+  .modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:200}
+  .modal{background:#fff;border-radius:14px;padding:28px 30px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h3{margin:0 0 8px;font-size:17px;font-weight:700}
+  .modal p{margin:0 0 16px;color:var(--muted);font-size:13px}
+  .modal input{width:100%;font-family:var(--mono);font-size:13px}
+  .modal .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{max-height:40vh;border-right:none;border-bottom:1px solid var(--line)}
+    .detail{max-height:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="dot"></span>
+    Lead Machine Lite
+    <span class="sub">— Dashboard do aluno</span>
+  </div>
+  <div class="header-right">
+    <span class="pill"><span id="totalCount">—</span> leads</span>
+    <a href="/" target="_blank">LP pública ↗</a>
+    <button class="btn subtle" id="tokenBtn" title="Configurar token de acesso">⚙</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="filter-bar" id="filterBar">
+      <button class="chip active" data-status="all">Todos</button>
+      <button class="chip" data-status="in_progress">Em andamento</button>
+      <button class="chip" data-status="pending">Gerando</button>
+      <button class="chip" data-status="ready">Pronto</button>
+      <button class="chip" data-status="error">Erro</button>
+    </div>
+    <div class="list" id="leadList">
+      <div class="empty">Carregando leads…</div>
+    </div>
+  </aside>
+
+  <main class="detail" id="detailPane">
+    <div class="placeholder">
+      <div>
+        <div class="big">Selecione um lead</div>
+        <div>Escolha um card à esquerda para ver o diagnóstico, gerar copy e o lead kit.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const COPY_CHANNELS = [
+  {value:'instagram',     label:'Instagram'},
+  {value:'linkedin',      label:'LinkedIn'},
+  {value:'email',         label:'Email'},
+  {value:'whatsapp',      label:'WhatsApp'},
+  {value:'facebook_ads',  label:'Facebook Ads'},
+  {value:'google_ads',    label:'Google Ads'},
+];
+
+const STATUS_LABEL = {
+  in_progress:'Em andamento',
+  pending:'Gerando diagnóstico',
+  ready:'Pronto',
+  error:'Erro',
+};
+
+let state = {
+  leads: [],
+  filter: 'all',
+  selectedId: null,
+  selectedDetail: null,
+};
+
+// Cache pra render diff (lead_id -> {updated_at, element})
+const listCache = new Map();
+
+// Flag pra evitar abrir modal de token em loop
+let _tokenModalOpen = false;
+// Última request que falhou por 401 — refazer após salvar token
+let _lastFailedRequest = null;
+
+// ── Markdown seguro ────────────────────────────────────────
+marked.use({ mangle: false, headerIds: false, breaks: true });
+function safeMd(s){
+  return DOMPurify.sanitize(marked.parse(s || ''), {USE_PROFILES: {html: true}});
+}
+
+// ── Token ──────────────────────────────────────────────────
+function getToken(){
+  const url = new URL(location.href);
+  const fromQuery = url.searchParams.get('token');
+  if (fromQuery){
+    localStorage.setItem('lm_aluno_token', fromQuery);
+    url.searchParams.delete('token');
+    history.replaceState({}, '', url.toString());
+    return fromQuery;
+  }
+  return localStorage.getItem('lm_aluno_token') || '';
+}
+function setToken(t){ localStorage.setItem('lm_aluno_token', t || ''); }
+
+function promptToken(msg){
+  if (_tokenModalOpen) return;
+  _tokenModalOpen = true;
+  const existing = document.getElementById('tokenModal');
+  if (existing) existing.remove();
+  const div = document.createElement('div');
+  div.id = 'tokenModal';
+  div.className = 'modal-bg';
+  div.innerHTML = `
+    <div class="modal">
+      <h3>Token de acesso</h3>
+      <p>${msg || 'Cole o valor de <code>ALUNO_TOKEN</code> definido no <code>.env</code> do backend. Fica salvo neste navegador.'}</p>
+      <input type="text" id="tokenInput" placeholder="ALUNO_TOKEN..." value="${getToken()}" />
+      <div class="actions">
+        <button class="btn subtle" id="tokenCancel">Cancelar</button>
+        <button class="btn" id="tokenSave">Salvar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(div);
+  const close = ()=>{ div.remove(); _tokenModalOpen = false; };
+  div.querySelector('#tokenCancel').onclick = close;
+  div.querySelector('#tokenSave').onclick = ()=>{
+    setToken(div.querySelector('#tokenInput').value.trim());
+    close();
+    // Refaz última request que falhou (ou reload de leads)
+    if (_lastFailedRequest){
+      const {path, opts} = _lastFailedRequest;
+      _lastFailedRequest = null;
+      apiFetch(path, opts).catch(()=>{});
+    }
+    loadLeads(true);
+  };
+}
+
+document.getElementById('tokenBtn').onclick = ()=>promptToken();
+
+// ── Fetch helpers ──────────────────────────────────────────
+async function apiFetch(path, opts={}){
+  const token = getToken();
+  const headers = Object.assign({}, opts.headers || {}, {'Content-Type':'application/json'});
+  if (token) headers['X-Aluno-Token'] = token;
+  const res = await fetch(path, Object.assign({}, opts, {headers}));
+  if (res.status === 401){
+    _lastFailedRequest = {path, opts};
+    promptToken('Token inválido ou não configurado. Cole o <code>ALUNO_TOKEN</code> abaixo.');
+    throw new Error('unauthorized');
+  }
+  if (!res.ok){
+    let detail = res.statusText;
+    try{ const j = await res.json(); detail = j.detail || detail; } catch(_){}
+    throw new Error(detail);
+  }
+  return res.json();
+}
+// Alias retrocompat
+const api = apiFetch;
+
+// ── Toast ──────────────────────────────────────────────────
+let toastTimer;
+function toast(msg, type='success'){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.remove('show'), 3200);
+}
+
+// ── Time ago ───────────────────────────────────────────────
+function timeAgo(iso){
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const s = (Date.now() - d.getTime())/1000;
+  if (s < 60) return 'agora';
+  if (s < 3600) return Math.floor(s/60) + 'min atrás';
+  if (s < 86400) return Math.floor(s/3600) + 'h atrás';
+  return Math.floor(s/86400) + 'd atrás';
+}
+
+// ── Render lista (diff por lead_id+updated_at) ─────────────
+function buildCard(l){
+  const card = document.createElement('div');
+  card.className = 'lead-card' + (l.lead_id === state.selectedId ? ' active' : '');
+  card.dataset.id = l.lead_id;
+  card.innerHTML = `
+    <div class="top">
+      <div class="nome"></div>
+      <span class="badge ${l.status}"></span>
+    </div>
+    <div class="empresa"></div>
+    <div class="meta">
+      <span class="m-answers"></span>
+      <span>·</span>
+      <span class="m-time"></span>
+      <span class="m-copy-sep" hidden>·</span>
+      <span class="m-copy" title="Tem copy gerada" hidden>📝</span>
+      <span class="m-kit-sep" hidden>·</span>
+      <span class="m-kit" title="Tem lead kit gerado" hidden>📦</span>
+    </div>`;
+  card.onclick = ()=>selectLead(card.dataset.id);
+  updateCardFields(card, l);
+  return card;
+}
+
+function updateCardFields(card, l){
+  card.querySelector('.nome').textContent = l.nome || '—';
+  const badge = card.querySelector('.badge');
+  badge.className = 'badge ' + l.status;
+  badge.textContent = STATUS_LABEL[l.status] || l.status;
+  card.querySelector('.empresa').textContent = l.empresa || '—';
+  card.querySelector('.m-answers').textContent = `${l.answers_count}/10 respostas`;
+  card.querySelector('.m-time').textContent = timeAgo(l.updated_at);
+  card.querySelector('.m-copy-sep').hidden = !l.has_copy;
+  card.querySelector('.m-copy').hidden = !l.has_copy;
+  card.querySelector('.m-kit-sep').hidden = !l.has_kit;
+  card.querySelector('.m-kit').hidden = !l.has_kit;
+}
+
+function renderList(){
+  const filtered = state.filter === 'all'
+    ? state.leads
+    : state.leads.filter(l => l.status === state.filter);
+  document.getElementById('totalCount').textContent = state.leads.length;
+
+  const root = document.getElementById('leadList');
+  if (!filtered.length){
+    root.innerHTML = '<div class="empty">Nenhum lead com esse filtro.</div>';
+    listCache.clear();
+    return;
+  }
+
+  // Se root tem só o placeholder "empty", limpar antes
+  if (root.querySelector('.empty')) root.innerHTML = '';
+
+  const seenIds = new Set();
+  const frag = document.createDocumentFragment();
+
+  filtered.forEach(l => {
+    seenIds.add(l.lead_id);
+    const cached = listCache.get(l.lead_id);
+    let card;
+    if (!cached){
+      card = buildCard(l);
+      listCache.set(l.lead_id, {updated_at: l.updated_at, element: card});
+    } else {
+      card = cached.element;
+      if (cached.updated_at !== l.updated_at){
+        updateCardFields(card, l);
+        cached.updated_at = l.updated_at;
+      }
+      // toggle active
+      card.classList.toggle('active', l.lead_id === state.selectedId);
+    }
+    frag.appendChild(card);
+  });
+
+  // Remove cards de leads que sumiram
+  for (const [id, entry] of listCache){
+    if (!seenIds.has(id)){
+      entry.element.remove();
+      listCache.delete(id);
+    }
+  }
+
+  // Re-anexa em nova ordem (DOM move sem destruir)
+  root.appendChild(frag);
+}
+
+document.getElementById('filterBar').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  state.filter = chip.dataset.status;
+  renderList();
+});
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── Lead detail ────────────────────────────────────────────
+async function selectLead(id){
+  state.selectedId = id;
+  renderList();
+  document.getElementById('detailPane').innerHTML = `<div class="placeholder">Carregando…</div>`;
+  try{
+    const lead = await api('/api/lead/' + id);
+    state.selectedDetail = lead;
+    renderDetail(lead);
+  } catch(e){
+    document.getElementById('detailPane').innerHTML = `<div class="placeholder"><div><div class="big">Erro</div><div>${escapeHtml(e.message)}</div></div></div>`;
+  }
+}
+
+function renderDetail(lead){
+  const info = lead.lead_info || {};
+  const answers = lead.answers || [];
+  const diag = lead.diagnostico_md;
+  const plano = lead.plano_md;
+  const isReady = lead.status === 'ready';
+  const isError = lead.status === 'error';
+  const materials = lead.materials || {};
+  const copyStore = materials.copy || {};
+  const kit = materials.kit;
+
+  if (isError){
+    document.getElementById('detailPane').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:6px">
+        <h1 style="margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em">${escapeHtml(info.nome || '—')}</h1>
+        <span class="badge error">Erro</span>
+      </div>
+      <div style="color:var(--muted);font-size:13px;margin-bottom:24px">${escapeHtml(info.empresa || '—')} · criado ${timeAgo(lead.created_at)}</div>
+      <div class="panel" style="text-align:center;padding:40px 20px">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:8px">Diagnóstico falhou</div>
+        <div style="color:var(--muted);font-size:13px">Tente regenerar via skill <code>/lead-machine-lite</code>.</div>
+      </div>`;
+    return;
+  }
+
+  const html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:6px">
+      <h1 style="margin:0;font-size:22px;font-weight:800;letter-spacing:-.02em">${escapeHtml(info.nome || '—')}</h1>
+      <span class="badge ${lead.status}">${STATUS_LABEL[lead.status] || lead.status}</span>
+    </div>
+    <div style="color:var(--muted);font-size:13px">${escapeHtml(info.empresa || '—')} · criado ${timeAgo(lead.created_at)}</div>
+
+    <div class="info-grid">
+      <div class="info-cell"><div class="k">Email</div><div class="v">${escapeHtml(info.email || '—')}</div></div>
+      <div class="info-cell"><div class="k">Telefone</div><div class="v">${escapeHtml(info.telefone || '—')}</div></div>
+      <div class="info-cell"><div class="k">Segmento</div><div class="v">${escapeHtml(info.segmento || '—')}</div></div>
+      <div class="info-cell"><div class="k">Site</div><div class="v">${escapeHtml(info.website || '—')}</div></div>
+      <div class="info-cell"><div class="k">Instagram</div><div class="v">${escapeHtml(info.instagram || '—')}</div></div>
+      <div class="info-cell"><div class="k">Respostas</div><div class="v">${answers.length}/10</div></div>
+    </div>
+
+    <div class="section">
+      <h2>Respostas do diagnóstico</h2>
+      <div class="panel">
+        ${answers.length ? `<div class="qa-list">${answers.map(a=>`
+          <div class="qa">
+            <div class="q">${escapeHtml(a.question_text || a.question_key)}</div>
+            <div class="a">${escapeHtml(a.answer || '')}</div>
+          </div>
+        `).join('')}</div>` : '<div style="color:var(--muted);font-style:italic">Ainda sem respostas.</div>'}
+      </div>
+    </div>
+
+    ${diag ? `
+    <div class="section">
+      <h2>Diagnóstico</h2>
+      <div class="panel markdown"><div class="markdown-body" id="md-diag"></div></div>
+    </div>` : ''}
+
+    ${plano ? `
+    <div class="section">
+      <h2>Plano — Futuro com IA</h2>
+      <div class="panel markdown"><div class="markdown-body" id="md-plano"></div></div>
+    </div>` : ''}
+
+    <div class="section">
+      <h2>Gerar copy</h2>
+      <div class="panel">
+        ${isReady ? `
+          <div class="row">
+            <select id="channelSel" style="min-width:180px">
+              ${COPY_CHANNELS.map(c=>`<option value="${c.value}">${c.label}</option>`).join('')}
+            </select>
+            <button class="btn" id="genCopyBtn">Gerar copy</button>
+            <span class="grow"></span>
+            <span style="font-size:12px;color:var(--muted)" id="copyStatus"></span>
+          </div>
+          <div class="material-output empty-state" id="copyOutput">Selecione um canal e clique em "Gerar copy".</div>
+        ` : '<div style="color:var(--muted);font-style:italic">Disponível quando o diagnóstico estiver pronto.</div>'}
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Lead Kit comercial</h2>
+      <div class="panel">
+        ${isReady ? `
+          <div class="row">
+            <button class="btn" id="genKitBtn">${kit ? 'Regenerar lead kit' : 'Gerar lead kit'}</button>
+            <span class="grow"></span>
+            <span style="font-size:12px;color:var(--muted)" id="kitStatus"></span>
+          </div>
+          <div class="material-output ${kit ? '' : 'empty-state'}" id="kitOutput">${kit ? '' : 'Gere o kit para usar com o lead.'}</div>
+        ` : '<div style="color:var(--muted);font-style:italic">Disponível quando o diagnóstico estiver pronto.</div>'}
+      </div>
+    </div>
+  `;
+  document.getElementById('detailPane').innerHTML = html;
+
+  if (diag) document.getElementById('md-diag').innerHTML = safeMd(diag);
+  if (plano) document.getElementById('md-plano').innerHTML = safeMd(plano);
+
+  if (isReady){
+    const sel = document.getElementById('channelSel');
+    const out = document.getElementById('copyOutput');
+    const status = document.getElementById('copyStatus');
+
+    function showCopy(channel){
+      const md = copyStore[channel];
+      if (md){
+        out.classList.remove('empty-state');
+        out.innerHTML = `<button class="copy-btn">Copiar</button><div class="markdown-body"></div>`;
+        out.querySelector('.markdown-body').innerHTML = safeMd(md);
+        const btn = out.querySelector('.copy-btn');
+        btn.onclick = ()=>{
+          navigator.clipboard.writeText(md);
+          btn.textContent = 'Copiado!'; btn.classList.add('copied');
+          setTimeout(()=>{ btn.textContent='Copiar'; btn.classList.remove('copied'); }, 1500);
+        };
+        const ts = (materials.copy_updated_at || {})[channel];
+        status.textContent = ts ? 'Gerado ' + timeAgo(ts) : '';
+      } else {
+        out.classList.add('empty-state');
+        out.innerHTML = 'Ainda não gerado para esse canal.';
+        status.textContent = '';
+      }
+    }
+    sel.onchange = ()=>showCopy(sel.value);
+    showCopy(sel.value);
+
+    document.getElementById('genCopyBtn').onclick = async (e)=>{
+      const btn = e.currentTarget;
+      const channel = sel.value;
+      const prev = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Gerando…`;
+      status.textContent = '';
+      try{
+        const r = await api('/lead/generate-copy', {method:'POST', body:JSON.stringify({lead_id:lead.lead_id, channel})});
+        copyStore[channel] = r.copy_md;
+        materials.copy = copyStore;
+        materials.copy_updated_at = Object.assign({}, materials.copy_updated_at || {}, {[channel]: new Date().toISOString()});
+        showCopy(channel);
+        toast('Copy gerada com sucesso.');
+      } catch(err){
+        toast('Erro: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = prev;
+      }
+    };
+
+    const kitOut = document.getElementById('kitOutput');
+    const kitStatus = document.getElementById('kitStatus');
+
+    function showKit(md){
+      kitOut.classList.remove('empty-state');
+      kitOut.innerHTML = `<button class="copy-btn">Copiar</button><div class="markdown-body"></div>`;
+      kitOut.querySelector('.markdown-body').innerHTML = safeMd(md);
+      const btn = kitOut.querySelector('.copy-btn');
+      btn.onclick = ()=>{
+        navigator.clipboard.writeText(md);
+        btn.textContent = 'Copiado!'; btn.classList.add('copied');
+        setTimeout(()=>{ btn.textContent='Copiar'; btn.classList.remove('copied'); }, 1500);
+      };
+      kitStatus.textContent = materials.kit_updated_at ? 'Gerado ' + timeAgo(materials.kit_updated_at) : '';
+    }
+    if (kit) showKit(kit);
+
+    document.getElementById('genKitBtn').onclick = async (e)=>{
+      const btn = e.currentTarget;
+      const prev = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> Gerando lead kit…`;
+      try{
+        const r = await api('/lead/generate-kit', {method:'POST', body:JSON.stringify({lead_id:lead.lead_id})});
+        materials.kit = r.kit_md;
+        materials.kit_updated_at = new Date().toISOString();
+        showKit(r.kit_md);
+        btn.innerHTML = 'Regenerar lead kit';
+        toast('Lead kit gerado.');
+      } catch(err){
+        toast('Erro: ' + err.message, 'error');
+        btn.innerHTML = prev;
+      } finally {
+        btn.disabled = false;
+      }
+    };
+  }
+}
+
+// ── Carregar / auto-refresh ────────────────────────────────
+async function loadLeads(silent=false){
+  try{
+    const r = await api('/api/leads');
+    state.leads = r.leads || [];
+    renderList();
+  } catch(e){
+    if (!silent){
+      const root = document.getElementById('leadList');
+      root.innerHTML = `<div class="empty">Erro: ${escapeHtml(e.message)}</div>`;
+    }
+  }
+}
+
+loadLeads();
+setInterval(()=>loadLeads(true), 30000);
+</script>
+</body>
+</html>
