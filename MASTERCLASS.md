@@ -1,4 +1,4 @@
-# MasterClass — Setup 8: Skills da Agência IA + Lead Machine Lite no seu Mac
+# MasterClass — Setup 8: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)
 
 Roteiro da aula em vídeo gravada pelo Rafael. Cortes referenciados por timestamp + GUID Bunny (preenchido após upload).
 

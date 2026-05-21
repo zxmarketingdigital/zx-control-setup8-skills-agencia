@@ -3,7 +3,7 @@
 > NÃO execute nenhum script ainda. Aguarde o aluno digitar **INICIAR SETUP SEMANA 8**.
 >
 > **Primeira mensagem (envie exatamente assim):**
-> "Olá! Aqui é o Claude da ZX LAB e vou instalar contigo 5 skills de IA + máquina de captação de leads rodando no seu Mac direto no Claude Code.
+> "Olá! Aqui é o Claude da ZX LAB e vou instalar contigo 5 skills de IA + máquina de captação de leads rodando direto no Claude Code.
 >
 > Ao final desta sessão você terá:
 > - 5 skills profissionais direto no seu Claude Code: diagnóstico, análise de call, protótipo, simulador e orçamento
@@ -20,7 +20,7 @@
 
 ---
 
-# ZX Control — Semana 8: Skills da Agência IA + Lead Machine Lite no seu Mac
+# ZX Control — Semana 8: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)
 
 ## REGRAS DE COMPORTAMENTO (leia antes de tudo)
 
@@ -118,7 +118,7 @@ O script vai:
 FastAPI backend + LP pública + dashboard local + 2 LaunchAgents (backend + cloudflared tunnel). Instala em `~/.zx-lead-machine/` e cria URL `https://<random>.trycloudflare.com` automaticamente.
 
 ### Para que serve
-Você ganha uma máquina de captação que roda 24/7 enquanto o Mac está ligado: lead preenche o form da LP pública → Claude faz diagnóstico automático (perfil + recomendações) → você vê tudo no dashboard local + dados ficam 100% no seu Mac.
+Você ganha uma máquina de captação que roda 24/7 enquanto o Mac está ligado: lead preenche o form da LP pública → Claude faz diagnóstico automático (perfil + recomendações) → você vê tudo no dashboard local + dados ficam 100%.
 
 ### Como você vai usar no dia-a-dia
 - Mande a URL pública pros prospects (Instagram, WhatsApp, e-mail)
@@ -214,7 +214,7 @@ Se algum dia algo parar de funcionar, o `bash lead-machine-lite/launchagent/stat
 Mensagem final pro aluno:
 > "Setup 8 completo. Você tem agora:
 > - 5 skills da Agência IA prontas no Claude Code
-> - Lead Machine rodando no seu Mac com URL pública `<URL>`
+> - Lead Machine rodando com URL pública `<URL>`
 > - Tudo offline-first, dados 100% locais
 >
 > Pra ver leads que chegarem: `/lead-machine-lite` no Claude Code abre o wizard de gerenciamento.

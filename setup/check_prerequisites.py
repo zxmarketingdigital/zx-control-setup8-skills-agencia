@@ -1,5 +1,5 @@
 """
-check_prerequisites.py — Validador inicial do Setup 8: Skills da Agência IA + Lead Machine Lite no seu Mac
+check_prerequisites.py — Validador inicial do Setup 8: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)
 
 Roda ANTES de qualquer setup_*.py. Bloqueia avanço se ambiente do aluno
 não atende os pré-requisitos.
@@ -85,7 +85,15 @@ def check_dir(path: Path, label: Optional[str] = None) -> bool:
 
 
 def main() -> int:
-    print(f"\n🔍 Validando pré-requisitos do Setup {SETUP_NUMBER}: Skills da Agência IA + Lead Machine Lite no seu Mac\n")
+    sysname = platform.system()
+    print(f"\n🔍 Validando pré-requisitos do Setup {SETUP_NUMBER}: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)")
+    print(f"   Sistema: {sysname}\n")
+
+    if sysname != "Darwin":
+        print("ℹ️  AVISO MULTI-OS:")
+        print("   • Bloco A (5 skills da Agência IA — ZX Growth): funciona neste sistema ✅")
+        print("   • Bloco B (Lead Machine Lite — ZX Lead Machine): requer macOS (LaunchAgents + cloudflared local)")
+        print("   • O install.sh detecta automaticamente e instala APENAS o Bloco A.\n")
 
     checks = []
 

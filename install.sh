@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — Setup 8: Skills da Agência IA + Lead Machine Lite
+# install.sh — Setup 8: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)
 # Executa: bash install.sh        (completo)
 #          bash install.sh --bloco-a   (só 5 skills)
 #          bash install.sh --dry-run   (sem side effects)
@@ -15,7 +15,7 @@ for arg in "$@"; do
     --dry-run) DRY_RUN=true ;;
     --bloco-a) BLOCO_A_ONLY=true ;;
     --help|-h)
-      echo "Setup 8 — Skills da Agência IA + Lead Machine Lite"
+      echo "Setup 8 — Agentes de Vendas + Captura de Leads Lite"
       echo ""
       echo "Uso: bash install.sh [--dry-run] [--bloco-a]"
       echo "  --dry-run   Simula sem efeitos colaterais"
@@ -38,12 +38,14 @@ step()   { echo "  →  $1"; }
 # Detectar SO — Lead Machine requer macOS (LaunchAgents)
 OS_NAME="$(uname)"
 
-header "Setup 8 — Skills da Agência IA + Lead Machine Lite"
+header "Setup 8 — Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)"
 echo "  Modo: $([ "$DRY_RUN" = true ] && echo 'DRY-RUN (sem side effects)' || echo 'INSTALAÇÃO REAL')"
 echo "  SO:   $OS_NAME"
 if [ "$OS_NAME" != "Darwin" ] && [ "$BLOCO_A_ONLY" = false ]; then
-  warn "Setup 8 Bloco B (Lead Machine) requer macOS — detectado $OS_NAME"
-  warn "Auto-ativando --bloco-a (só skills serão instaladas)"
+  warn "Sistema detectado: $OS_NAME (não-macOS)"
+  warn "Bloco A (5 skills da Agência IA — ZX Growth): será instalado normalmente ✅"
+  warn "Bloco B (Lead Machine Lite — ZX Lead Machine): pulado — requer macOS (LaunchAgents + cloudflared local)"
+  warn "→ Auto-ativando --bloco-a. Pra rodar Lead Machine: use Agência IA 50K (SaaS multi-OS)."
   BLOCO_A_ONLY=true
 fi
 echo ""
