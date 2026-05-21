@@ -89,12 +89,6 @@ def main() -> int:
     print(f"\n🔍 Validando pré-requisitos do Setup {SETUP_NUMBER}: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)")
     print(f"   Sistema: {sysname}\n")
 
-    if sysname != "Darwin":
-        print("ℹ️  AVISO MULTI-OS:")
-        print("   • Bloco A (5 skills da Agência IA — ZX Growth): funciona neste sistema ✅")
-        print("   • Bloco B (Lead Machine Lite — ZX Lead Machine): requer macOS (LaunchAgents + cloudflared local)")
-        print("   • O install.sh detecta automaticamente e instala APENAS o Bloco A.\n")
-
     checks = []
 
     # Sistema operacional
@@ -102,8 +96,17 @@ def main() -> int:
     _check("Sistema operacional suportado", os_ok, os_detail)
     checks.append(os_ok)
 
-    # Python
-    checks.append(check_python_version())
+    # Python ANTES do aviso Bloco B — erro bloqueante geral tem prioridade
+    py_ok = check_python_version()
+    checks.append(py_ok)
+
+    # Aviso multi-OS só se Python passou (senão é ruído ao lado do erro real)
+    if sysname != "Darwin" and py_ok:
+        print()
+        print("ℹ️  AVISO MULTI-OS:")
+        print("   • Bloco A (5 skills da Agência IA — ZX Growth): funciona neste sistema ✅")
+        print("   • Bloco B (Lead Machine Lite — ZX Lead Machine): requer macOS (LaunchAgents + cloudflared local)")
+        print("   • O install.sh detecta automaticamente e instala APENAS o Bloco A.")
 
     # Setup anterior
     checks.append(check_phase_completed())
