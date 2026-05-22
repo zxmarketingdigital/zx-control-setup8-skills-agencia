@@ -1,119 +1,1037 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine) — Setup 8 ZX Control</title>
-  <!-- Force rebuild 2026-05-20 18:10 -->
-  <style>
-    :root {
-      --primary: #06B6D4;
-      --secondary: #0891b2;
-      --gradient-cta: linear-gradient(135deg, #06B6D4, #0891b2);
-      --bg: #0a0a0a;
-      --bg2: #111;
-      --text: #f5f5f5;
-      --text2: #bbb;
-      --text3: #888;
-      --border: rgba(255,255,255,0.08);
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', -apple-system, sans-serif;
-      min-height: 100vh;
-      padding: 32px 20px;
-    }
-    .container { max-width: 1100px; margin: 0 auto; }
-    header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 32px; padding-bottom: 20px;
-      border-bottom: 1px solid var(--border);
-    }
-    h1 { font-size: 1.5rem; font-weight: 700; }
-    .badge {
-      background: var(--gradient-cta);
-      padding: 4px 12px; border-radius: 999px;
-      font-size: 0.75rem; font-weight: 600;
-    }
-    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
-    .stat-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px; padding: 20px;
-    }
-    .stat-label { font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
-    .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
-    .stat-sub { font-size: 0.8rem; color: var(--text2); margin-top: 4px; }
-    .section {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px; padding: 24px;
-      margin-bottom: 20px;
-    }
-    .section h2 { font-size: 1.1rem; margin-bottom: 16px; color: var(--text); }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    th, td { text-align: left; padding: 10px; border-bottom: 1px solid var(--border); }
-    th { color: var(--text3); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .empty { color: var(--text3); padding: 16px; text-align: center; font-style: italic; }
-    .footer { margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); text-align: center; color: var(--text3); font-size: 0.8rem; }
-    .footer a { color: var(--primary); text-decoration: none; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setup 8 · Skills da Agência IA + Lead Machine no seu Mac — ZX Control</title>
+<meta name="description" content="5 skills profissionais + máquina de leads rodando direto no seu Mac via Claude Code. Sem mensalidade, sem nuvem, sem fricção.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #D97706;
+  --primary-light: #F59E0B;
+  --primary-bright: #FCD34D;
+  --primary-dark: #92400e;
+  --bg: #0D0D0D;
+  --bg-alt: #0A0A0A;
+  --surface: #1A1A1A;
+  --surface2: #222222;
+  --footer: #080808;
+  --text: #E2E8F0;
+  --text-secondary: #9CA3AF;
+  --text-muted: #6B7280;
+  --border: #2A2A2A;
+  --border-light: #333333;
+  --green: #4ADE80;
+  --red: #EF4444;
+  --indigo: #818CF8;
+  --term-bg: #0B0F14;
+  --term-bubble-claude: #1F2937;
+  --term-bubble-user: rgba(217, 119, 6, 0.18);
+  --term-bubble-user-border: rgba(217, 119, 6, 0.55);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(ellipse at top, rgba(217, 119, 6, 0.07), transparent 60%),
+    var(--bg);
+  min-height: 100vh;
+}
+
+/* HERO */
+.hero {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 32px 28px;
+  text-align: center;
+}
+.hero .tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--primary-light);
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-bottom: 24px;
+  background: rgba(217, 119, 6, 0.04);
+}
+.hero h1 {
+  font-size: clamp(1.9rem, 4.6vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  margin: 0 0 16px;
+  line-height: 1.12;
+  background: linear-gradient(180deg, #FFFFFF 0%, #C4C4C4 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero h1 .amber {
+  background: linear-gradient(180deg, var(--primary-bright) 0%, var(--primary) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  max-width: 720px;
+  margin: 0 auto;
+}
+.hero .stats-line {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 18px;
+  letter-spacing: 0.04em;
+}
+.hero .stats-line strong { color: var(--primary-bright); font-weight: 700; }
+
+/* DEMO */
+.demo {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 32px 60px;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 32px;
+  align-items: start;
+}
+@media (max-width: 880px) {
+  .demo { grid-template-columns: 1fr; gap: 24px; padding: 20px 16px 40px; }
+  .sidebar { order: -1; }
+}
+
+/* TERMINAL CLAUDE CODE */
+.terminal {
+  background: var(--term-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 24px 60px rgba(0,0,0,0.55),
+    0 8px 24px rgba(217, 119, 6, 0.06);
+  display: flex;
+  flex-direction: column;
+  height: 660px;
+}
+.term-bar {
+  background: #161B22;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.term-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3F4451;
+}
+.term-dot.r { background: #FF5F57; }
+.term-dot.y { background: #FEBC2E; }
+.term-dot.g { background: #28C840; }
+.term-title {
+  margin-left: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.term-badge {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--primary-light);
+  background: rgba(217, 119, 6, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.term-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+}
+.term-messages::-webkit-scrollbar { width: 6px; }
+.term-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+
+.bubble {
+  max-width: 88%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  animation: pop .22s ease-out;
+}
+@keyframes pop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.bubble .meta {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.bubble.claude {
+  background: var(--term-bubble-claude);
+  color: #E9EDEF;
+  align-self: flex-start;
+  border-bottom-left-radius: 2px;
+  border-left: 2px solid var(--primary);
+}
+.bubble.claude .meta { color: var(--primary-light); }
+.bubble.user {
+  background: var(--term-bubble-user);
+  border: 1px solid var(--term-bubble-user-border);
+  color: var(--primary-bright);
+  align-self: flex-end;
+  border-bottom-right-radius: 2px;
+}
+.bubble.user .meta { color: rgba(252, 211, 77, 0.65); }
+.bubble.skill-output {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  background: #0A0E13;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--green);
+}
+.bubble.skill-output .meta { color: var(--green); }
+.bubble.system {
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  text-align: center;
+  align-self: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+}
+
+.typing {
+  align-self: flex-start;
+  background: var(--term-bubble-claude);
+  border-radius: 12px;
+  border-left: 2px solid var(--primary);
+  padding: 14px 18px;
+  display: flex;
+  gap: 5px;
+}
+.typing span {
+  width: 6px;
+  height: 6px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 50%;
+  animation: blink 1.2s infinite;
+}
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-2px); }
+}
+
+.term-input {
+  background: #161B22;
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--border);
+}
+.term-input .prompt {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.92rem;
+  color: var(--primary-light);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.term-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.92rem;
+  outline: none;
+}
+.term-input input::placeholder { color: rgba(255,255,255,0.35); }
+.term-input button {
+  background: var(--primary);
+  border: none;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.term-input button:hover { background: var(--primary-light); }
+.term-input button:active { transform: scale(0.97); }
+
+/* SIDEBAR */
+.sidebar h3 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary-light);
+  margin: 0 0 14px;
+}
+.sidebar .card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.sidebar .card p {
+  margin: 0 0 14px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.suggestions button {
+  text-align: left;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.83rem;
+  cursor: pointer;
+  transition: all .15s;
+  position: relative;
+}
+.suggestions button:hover {
+  border-color: var(--primary);
+  background: rgba(217, 119, 6, 0.08);
+  color: var(--primary-bright);
+}
+.suggestions button:active { transform: translateY(1px); }
+.suggestions button .label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+.info-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 12px;
+}
+.info-item .label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.info-item .value {
+  font-size: 0.92rem;
+  color: var(--primary-bright);
+  font-weight: 700;
+}
+
+.reset-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  width: 100%;
+  transition: all .15s;
+}
+.reset-btn:hover { color: var(--primary-light); border-color: var(--primary); }
+
+/* SKILLS GRID */
+.skills-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 32px;
+}
+.skills-section h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin: 0 0 8px;
+  color: #fff;
+}
+.skills-section .lead {
+  text-align: center;
+  color: var(--text-secondary);
+  margin: 0 auto 32px;
+  max-width: 640px;
+  font-size: 0.98rem;
+}
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+.skill-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all .2s;
+}
+.skill-card:hover {
+  border-color: var(--primary-dark);
+  background: var(--surface2);
+}
+.skill-card .cmd {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--primary-bright);
+  margin-bottom: 6px;
+}
+.skill-card .what {
+  font-size: 0.9rem;
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.skill-card .desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+/* INSTALL */
+.install {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 32px 60px;
+}
+.install-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+}
+.install-box h2 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  color: #fff;
+}
+.install-box p {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  margin: 0 0 18px;
+}
+.install-box pre {
+  background: var(--term-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: var(--primary-bright);
+  margin: 0;
+  overflow-x: auto;
+  line-height: 1.55;
+}
+.install-box pre .c { color: var(--text-muted); }
+.install-box pre .k { color: var(--primary-light); }
+.install-box .step {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--primary-light);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-top: 22px;
+  margin-bottom: 8px;
+}
+
+/* FOOTER */
+.footer {
+  background: var(--footer);
+  border-top: 1px solid var(--border);
+  padding: 32px;
+  text-align: center;
+}
+.footer p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0 0 8px;
+}
+.footer .brand { color: var(--primary-light); font-weight: 700; }
+.footer a { color: var(--primary-light); text-decoration: none; }
+.footer a:hover { color: var(--primary-bright); }
+</style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <h1>Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)</h1>
-      <span class="badge">Setup 8 · ZX Control Scale</span>
-    </header>
 
-    <!--
-      DADOS INLINE — sem chamadas de rede. Dashboard pode ser aberto via file:// sem CORS.
-      Script Python parametriza esta variável no build.
-    -->
-    <script>
-      // Dados inline — sem chamadas de rede. tojson serializa dict Python como JSON válido.
-      const _SETUP_DATA = "{}";
-    </script>
+<section class="hero">
+  <span class="tag">Setup 8 · ZX Control Scale</span>
+  <h1>Skills da Agência IA + <span class="amber">máquina de leads</span> rodando no seu Mac</h1>
+  <p>5 skills profissionais direto no Claude Code + Lead Machine Lite com LP pública. Sem mensalidade, sem nuvem, sem depender de SaaS. Instalado em 1 comando.</p>
+  <div class="stats-line">
+    <strong>5</strong> skills · <strong>1</strong> LP pública · <strong>1</strong> dashboard local · <strong>0</strong> mensalidades · <strong>~15min</strong> de setup
+  </div>
+</section>
 
-    <div class="stats" id="statsContainer"></div>
-
-    <div class="footer">
-      Última atualização: <span id="lastUpdate">2026-05-20 18:10</span>
-      · ZX Control Scale
-      · <a href="https://zxlab.com.br/mission-control">mission-control</a>
+<main class="demo">
+  <div class="terminal">
+    <div class="term-bar">
+      <span class="term-dot r"></span>
+      <span class="term-dot y"></span>
+      <span class="term-dot g"></span>
+      <span class="term-title">Claude Code · ~/agencia-ia</span>
+      <span class="term-badge">Demo ao vivo</span>
     </div>
+    <div class="term-messages" id="msgs"></div>
+    <form class="term-input" id="form">
+      <span class="prompt">›</span>
+      <input
+        type="text"
+        id="input"
+        placeholder="Digite o nome de uma skill ou clique numa sugestão →"
+        autocomplete="off"
+        maxlength="200"
+      >
+      <button type="submit">Enviar</button>
+    </form>
   </div>
 
-  <script>
-    // Render stats
-    const statsEl = document.getElementById('statsContainer');
-    (_SETUP_DATA.stats || []).forEach(s => {
-      const card = document.createElement('div');
-      card.className = 'stat-card';
-      card.innerHTML = `
-        <div class="stat-label">${s.label}</div>
-        <div class="stat-value">${s.value}</div>
-        ${s.sub ? `<div class="stat-sub">${s.sub}</div>` : ''}
-      `;
-      statsEl.appendChild(card);
-    });
+  <aside class="sidebar">
+    <div class="card">
+      <h3>Experimente uma skill</h3>
+      <p>Clique pra ver a skill rodando dentro do mockup do Claude Code — exatamente como você vai usar no seu Mac.</p>
+      <div class="suggestions">
+        <button data-cmd="/diagnostico-empreendedor">/diagnostico-empreendedor<span class="label">5 perguntas → seu perfil + plano 30d</span></button>
+        <button data-cmd="/simulador-vendas">/simulador-vendas<span class="label">Treinar abordagem com cliente IA</span></button>
+        <button data-cmd="/criar-orcamento">/criar-orcamento<span class="label">Proposta comercial em 3 minutos</span></button>
+        <button data-cmd="/lead-machine-lite">/lead-machine-lite<span class="label">LP pública + dashboard de leads</span></button>
+      </div>
+    </div>
 
-    // Render tabelas (se houver)
-    Object.entries(_SETUP_DATA.tables || {}).forEach(([tableId, rows]) => {
-      const tbody = document.getElementById(tableId + 'Body');
-      if (!tbody) return;
-      if (!rows || rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="99" class="empty">Sem dados ainda — rode os scripts da primeira vez</td></tr>`;
-        return;
-      }
-      rows.forEach(row => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = row.map(c => `<td>${c}</td>`).join('');
-        tbody.appendChild(tr);
-      });
-    });
-  </script>
+    <div class="card">
+      <h3>O que você ganha</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="label">Skills</div>
+          <div class="value">5 prontas</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Custo</div>
+          <div class="value">Zero/mês</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Setup</div>
+          <div class="value">~15 min</div>
+        </div>
+        <div class="info-item">
+          <div class="label">Dados</div>
+          <div class="value">100% local</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="reset-btn" id="reset">↺ Reiniciar demo</button>
+  </aside>
+</main>
+
+<section class="skills-section">
+  <h2>5 skills + Lead Machine prontos pra usar</h2>
+  <p class="lead">Tudo instalado direto em <code style="font-family: 'JetBrains Mono', monospace; color: var(--primary-bright);">~/.claude/skills/</code> — aparecem como comandos no Claude Code imediatamente.</p>
+
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="cmd">/diagnostico-empreendedor</div>
+      <div class="what">Seu perfil de empreendedor IA</div>
+      <div class="desc">5 perguntas curtas → classifica em 1 de 7 perfis + 3 áreas de atuação + plano de 30 dias pra montar sua agência.</div>
+    </div>
+    <div class="skill-card">
+      <div class="cmd">/analise-call</div>
+      <div class="what">Feedback de call comercial</div>
+      <div class="desc">Cole o resumo da call (ou puxa do Zoom) → identifica objeções perdidas, gatilhos não usados, script de follow-up.</div>
+    </div>
+    <div class="skill-card">
+      <div class="cmd">/prototipar-sistema</div>
+      <div class="what">Protótipo HTML pra cliente</div>
+      <div class="desc">Brief estruturado de sistema/LP/app → gera HTML hi-fi interativo que você manda pro cliente validar.</div>
+    </div>
+    <div class="skill-card">
+      <div class="cmd">/simulador-vendas</div>
+      <div class="what">Treinar abordagem comercial</div>
+      <div class="desc">Você define perfil do lead, a skill simula objeções e respostas → feedback estruturado ao final.</div>
+    </div>
+    <div class="skill-card">
+      <div class="cmd">/criar-orcamento</div>
+      <div class="what">Proposta comercial em PDF</div>
+      <div class="desc">Cliente + escopo + valor → proposta estruturada em Markdown + PDF pronta pra fechar.</div>
+    </div>
+    <div class="skill-card" style="border-color: var(--primary-dark); background: linear-gradient(180deg, var(--surface2), var(--surface));">
+      <div class="cmd">/lead-machine-lite</div>
+      <div class="what">LP pública + dashboard local</div>
+      <div class="desc">FastAPI no Mac + cloudflared tunnel → você recebe lead na LP, diagnóstico IA roda automático, vê tudo no dashboard.</div>
+    </div>
+  </div>
+</section>
+
+<section class="install">
+  <div class="install-box">
+    <h2>Instalação em 1 comando</h2>
+    <p>Pré-requisitos: macOS, Claude Code CLI, Python 3.10+ e Setup 7 do ZX Control concluído.</p>
+    <div class="step">Passo 1 · Clone</div>
+<pre><span class="c"># clona o repo público</span>
+git clone https://github.com/zxmarketingdigital/zx-control-setup8-skills-agencia
+<span class="k">cd</span> zx-control-setup8-skills-agencia</pre>
+    <div class="step">Passo 2 · Abrir Claude Code</div>
+<pre><span class="c"># abre Claude Code na pasta — ele vai te guiar pela instalação</span>
+claude</pre>
+    <div class="step">Passo 3 · Comando mágico</div>
+<pre><span class="c"># dentro do Claude Code, digite:</span>
+INICIAR SETUP SEMANA 8</pre>
+    <p style="margin-top: 22px; color: var(--text-muted); font-size: 0.85rem;">A partir daí o Claude executa tudo pra você — 5 etapas guiadas, ~15 minutos. Você não precisa digitar nenhum comando no terminal.</p>
+  </div>
+</section>
+
+<footer class="footer">
+  <p><span class="brand">ZX LAB</span> · Setup 8 do ZX Control Scale · Skills da Agência IA + Lead Machine Lite</p>
+  <p>Repo público: <a href="https://github.com/zxmarketingdigital/zx-control-setup8-skills-agencia">github.com/zxmarketingdigital/zx-control-setup8-skills-agencia</a></p>
+</footer>
+
+<script>
+/* ============================================
+   DADOS — perfis e fluxos do /diagnostico-empreendedor
+   ============================================ */
+const PERFIS = {
+  "tecnico-especialista": {
+    nome: "Técnico Especialista",
+    descricao: "Você domina a parte técnica mas tem desconforto pra vender. Sua oportunidade: empacotar sua expertise em produto.",
+    areas: ["Implementação técnica de IA pra PMEs", "Automação de processos repetitivos", "Consultoria de arquitetura IA"]
+  },
+  "vendedor-comunicador": {
+    nome: "Vendedor Comunicador",
+    descricao: "Você sabe vender e se comunicar. Sua dor: entregar a parte técnica. Solução: empacotar produtos prontos.",
+    areas: ["Revenda de agentes IA white-label", "Consultoria estratégica IA pra C-level", "Treinamento corporativo de IA"]
+  },
+  "executor-pratico": {
+    nome: "Executor Prático",
+    descricao: "Você toca projeto e entrega. Foco: oferecer entregáveis claros com prazo curto e prova social rápida.",
+    areas: ["Automação WhatsApp pra clínicas/restaurantes", "Chatbots de atendimento padronizados", "Setup de CRM + IA pra times comerciais"]
+  }
+};
+
+const PERGUNTAS = [
+  {
+    pergunta: "Pra começar, qual o seu background profissional?",
+    opcoes: [
+      { txt: "Sou desenvolvedor / engenheiro", perfil: "tecnico-especialista" },
+      { txt: "Sou vendedor / comercial", perfil: "vendedor-comunicador" },
+      { txt: "Sou autônomo / consultor", perfil: "executor-pratico" }
+    ]
+  },
+  {
+    pergunta: "Quanto você fatura por mês hoje (média últimos 3 meses)?",
+    opcoes: [
+      { txt: "Até R$ 5.000", perfil: null },
+      { txt: "R$ 5.000 a R$ 20.000", perfil: null },
+      { txt: "Acima de R$ 20.000", perfil: null }
+    ]
+  },
+  {
+    pergunta: "Quanto tempo por semana você tem pra colocar nessa agência IA?",
+    opcoes: [
+      { txt: "Até 10h (tempo livre)", perfil: null },
+      { txt: "10h a 25h (paralelo)", perfil: null },
+      { txt: "40h+ (full-time)", perfil: null }
+    ]
+  },
+  {
+    pergunta: "Você já vendeu serviço pra cliente B2B antes?",
+    opcoes: [
+      { txt: "Sim, várias vezes", perfil: "vendedor-comunicador" },
+      { txt: "Sim, algumas vezes", perfil: null },
+      { txt: "Ainda não", perfil: "tecnico-especialista" }
+    ]
+  },
+  {
+    pergunta: "Onde você se sente mais confortável?",
+    opcoes: [
+      { txt: "Construir / desenvolver", perfil: "tecnico-especialista" },
+      { txt: "Vender / negociar", perfil: "vendedor-comunicador" },
+      { txt: "Entregar / executar", perfil: "executor-pratico" }
+    ]
+  }
+];
+
+const PLANO_30D = [
+  "Semana 1 · Diagnóstico de 3 leads B2B no seu nicho (use /lead-machine-lite pra capturar)",
+  "Semana 2 · 1 protótipo HTML por lead qualificado (use /prototipar-sistema)",
+  "Semana 3 · 2 propostas comerciais enviadas (use /criar-orcamento)",
+  "Semana 4 · 1 contrato fechado + onboarding do cliente (use /analise-call pra reviews semanais)"
+];
+
+const SIMULADOR_RESPOSTAS = [
+  "Tudo bem! Mas seu serviço é mais caro que o do concorrente que conversei semana passada. Como você justifica o preço?",
+  "Entendi. E quanto tempo leva pra eu ver resultado real? Não posso ficar 6 meses pagando sem retorno.",
+  "Faz sentido. Vou pensar e te dou um retorno semana que vem. Pode me passar uma proposta formal?"
+];
+
+const ORCAMENTO_OUTPUT = `📋 PROPOSTA COMERCIAL — Padaria Vovó Maria
+─────────────────────────────────────────
+Cliente:  Padaria Vovó Maria (Marcos S.)
+Escopo:   Agente WhatsApp 24/7 + cardápio + pedidos
+Prazo:    14 dias úteis
+
+Entregáveis:
+ 1. Agente Bia configurado no WhatsApp comercial
+ 2. Cardápio integrado com 24 itens
+ 3. Coleta de pedido + endereço + pagamento
+ 4. Notificação no celular do Marcos
+ 5. Dashboard de pedidos do dia
+
+Investimento:
+ ↳ Setup:        R$ 1.500 (única)
+ ↳ Mensalidade:  R$   297 (suporte + ajustes)
+
+Próximos passos:
+ ✓ Aprovação até sexta
+ ✓ Início segunda 09h
+ ✓ Demo em 7 dias
+
+✓ Proposta salva em ~/clientes/padaria-vovo-maria/proposta.pdf`;
+
+const LEAD_MACHINE_OUTPUT = `🚀 Lead Machine Lite iniciado
+─────────────────────────────
+[OK] Backend FastAPI rodando em http://localhost:8791
+[OK] Cloudflared tunnel exposto
+     URL pública: https://lead-gnomo-feliz.trycloudflare.com
+[OK] Dashboard local: ~/.zx-lead-machine/dashboard-url.txt
+[OK] LaunchAgent ativo — sobe sozinho no boot do Mac
+
+Próximos passos:
+ 1. Compartilhe a URL pública com seus leads
+ 2. Quando alguém preencher o diagnóstico, aparece no dashboard
+ 3. O diagnóstico IA roda automático em ~30s
+
+Aguardando primeiro lead... 👀`;
+
+/* ============================================
+   ESTADO + UI
+   ============================================ */
+const state = {
+  currentFlow: null,  // "diagnostico" | "simulador" | null
+  diagStep: 0,
+  diagPerfis: [],
+  simStep: 0,
+};
+
+const $msgs = document.getElementById("msgs");
+const $form = document.getElementById("form");
+const $input = document.getElementById("input");
+const $reset = document.getElementById("reset");
+
+function now() {
+  const d = new Date();
+  return d.getHours().toString().padStart(2,"0") + ":" + d.getMinutes().toString().padStart(2,"0");
+}
+
+function appendBubble(kind, text, meta) {
+  const b = document.createElement("div");
+  b.className = "bubble " + kind;
+  if (meta) {
+    const m = document.createElement("span");
+    m.className = "meta";
+    m.textContent = meta;
+    b.appendChild(m);
+  }
+  const t = document.createElement("span");
+  t.textContent = text;
+  b.appendChild(t);
+  $msgs.appendChild(b);
+  $msgs.scrollTop = $msgs.scrollHeight;
+}
+
+function appendSystem(text) {
+  const s = document.createElement("div");
+  s.className = "bubble system";
+  s.textContent = text;
+  $msgs.appendChild(s);
+  $msgs.scrollTop = $msgs.scrollHeight;
+}
+
+function showTyping() {
+  hideTyping();
+  const t = document.createElement("div");
+  t.className = "typing";
+  t.id = "typing";
+  t.innerHTML = "<span></span><span></span><span></span>";
+  $msgs.appendChild(t);
+  $msgs.scrollTop = $msgs.scrollHeight;
+}
+
+function hideTyping() {
+  const t = document.getElementById("typing");
+  if (t) t.remove();
+}
+
+function respondClaude(text, meta, delay) {
+  const d = delay !== undefined ? delay : 700 + Math.random() * 500;
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    appendBubble("claude", text, meta || "Claude Code");
+  }, d);
+}
+
+function respondSkill(text, meta, delay) {
+  const d = delay !== undefined ? delay : 900 + Math.random() * 400;
+  showTyping();
+  setTimeout(() => {
+    hideTyping();
+    appendBubble("skill-output", text, meta);
+  }, d);
+}
+
+/* ============================================
+   COMANDOS
+   ============================================ */
+function startDiagnostico() {
+  appendBubble("user", "/diagnostico-empreendedor", "$");
+  state.currentFlow = "diagnostico";
+  state.diagStep = 0;
+  state.diagPerfis = [];
+  setTimeout(() => {
+    respondClaude(
+      "Vou te fazer 5 perguntas curtas pra entender seu perfil de empreendedor e sugerir áreas de atuação alinhadas + um plano de 30 dias pra começar.\n\nResponde com o número da opção (1, 2 ou 3).",
+      "diagnostico-empreendedor"
+    );
+    setTimeout(() => askDiagQuestion(), 1800);
+  }, 250);
+}
+
+function askDiagQuestion() {
+  if (state.diagStep >= PERGUNTAS.length) {
+    return finishDiagnostico();
+  }
+  const q = PERGUNTAS[state.diagStep];
+  const opcoes = q.opcoes.map((o, i) => `${i + 1}. ${o.txt}`).join("\n");
+  respondClaude(
+    `Pergunta ${state.diagStep + 1} de ${PERGUNTAS.length}\n\n${q.pergunta}\n\n${opcoes}`,
+    "diagnostico-empreendedor"
+  );
+}
+
+function processDiagAnswer(text) {
+  const m = text.trim().match(/^([1-3])/);
+  if (!m) {
+    respondClaude("Não entendi. Responde com 1, 2 ou 3 pra escolher uma opção.", "diagnostico-empreendedor");
+    return;
+  }
+  const idx = parseInt(m[1], 10) - 1;
+  const q = PERGUNTAS[state.diagStep];
+  if (idx < 0 || idx >= q.opcoes.length) {
+    respondClaude("Esse número não existe nas opções. Tenta de novo (1, 2 ou 3).", "diagnostico-empreendedor");
+    return;
+  }
+  const escolha = q.opcoes[idx];
+  if (escolha.perfil) state.diagPerfis.push(escolha.perfil);
+  state.diagStep++;
+  setTimeout(() => askDiagQuestion(), 800);
+}
+
+function finishDiagnostico() {
+  const tally = {};
+  state.diagPerfis.forEach(p => tally[p] = (tally[p] || 0) + 1);
+  const sorted = Object.entries(tally).sort((a,b) => b[1] - a[1]);
+  const perfilKey = sorted.length ? sorted[0][0] : "executor-pratico";
+  const perfil = PERFIS[perfilKey];
+
+  respondClaude("Analisando suas respostas...", "diagnostico-empreendedor");
+
+  setTimeout(() => {
+    const txt = `🎯 SEU PERFIL: ${perfil.nome}\n\n${perfil.descricao}\n\n3 áreas de atuação pra você:\n${perfil.areas.map((a,i)=>`${i+1}. ${a}`).join("\n")}\n\nPLANO 30 DIAS:\n${PLANO_30D.join("\n")}`;
+    respondSkill(txt, "Output → diagnostico-empreendedor");
+    setTimeout(() => {
+      respondClaude("✓ Perfil completo. Resultado salvo em ~/.operacao-ia/diagnostico.json\n\nQuer testar outra skill? Clica numa das sugestões à direita →", "diagnostico-empreendedor");
+      state.currentFlow = null;
+    }, 2200);
+  }, 1600);
+}
+
+function startSimulador() {
+  appendBubble("user", "/simulador-vendas", "$");
+  state.currentFlow = "simulador";
+  state.simStep = 0;
+  setTimeout(() => {
+    respondClaude(
+      "Vou simular um lead pra você treinar abordagem comercial.\n\nCenário: dono de padaria de bairro, 5 funcionários, fatura R$ 80k/mês. Procura solução de atendimento WhatsApp.\n\nManda sua abertura — eu respondo como o lead.",
+      "simulador-vendas"
+    );
+  }, 300);
+}
+
+function processSimulador(text) {
+  if (text.trim().toLowerCase() === "fim" || state.simStep >= SIMULADOR_RESPOSTAS.length) {
+    respondSkill("✓ Simulação encerrada. Feedback:\n\n• Você usou linguagem objetiva, sem jargão técnico\n• Pode trabalhar mais o ângulo de retorno em vez de feature\n• Próxima call: comece pelo problema do cliente, não pela solução\n\nResultado salvo em ~/.operacao-ia/simulacoes/2026-05-21.md", "Output → simulador-vendas");
+    state.currentFlow = null;
+    return;
+  }
+  setTimeout(() => {
+    respondClaude(SIMULADOR_RESPOSTAS[state.simStep], "Lead simulado (Marcos · Padaria)");
+    state.simStep++;
+    if (state.simStep === SIMULADOR_RESPOSTAS.length) {
+      setTimeout(() => {
+        respondClaude("Mais respostas? Digite *fim* pra encerrar simulação.", "simulador-vendas");
+      }, 1400);
+    }
+  }, 600);
+}
+
+function runOrcamento() {
+  appendBubble("user", "/criar-orcamento", "$");
+  setTimeout(() => {
+    respondClaude("Cliente, escopo e valor recebidos. Gerando proposta estruturada...", "criar-orcamento");
+    setTimeout(() => {
+      respondSkill(ORCAMENTO_OUTPUT, "Output → criar-orcamento");
+      setTimeout(() => {
+        respondClaude("✓ PDF gerado. Tudo pronto pra você enviar pro cliente.", "criar-orcamento");
+      }, 2000);
+    }, 1400);
+  }, 300);
+}
+
+function runLeadMachine() {
+  appendBubble("user", "/lead-machine-lite", "$");
+  setTimeout(() => {
+    respondClaude("Subindo backend + tunnel + dashboard...", "lead-machine-lite");
+    setTimeout(() => {
+      respondSkill(LEAD_MACHINE_OUTPUT, "Output → lead-machine-lite");
+    }, 1500);
+  }, 300);
+}
+
+function handleCommand(text) {
+  const cmd = text.trim().toLowerCase();
+  if (cmd === "/diagnostico-empreendedor" || cmd === "diagnostico") return startDiagnostico();
+  if (cmd === "/simulador-vendas" || cmd === "simulador") return startSimulador();
+  if (cmd === "/criar-orcamento" || cmd === "orcamento") return runOrcamento();
+  if (cmd === "/lead-machine-lite" || cmd === "lead-machine" || cmd === "lead") return runLeadMachine();
+  appendBubble("user", text, "$");
+  setTimeout(() => {
+    respondClaude(
+      "Hmm, não reconheci esse comando. Tenta uma das skills do Setup 8:\n\n• /diagnostico-empreendedor\n• /simulador-vendas\n• /criar-orcamento\n• /lead-machine-lite\n\nOu clica numa sugestão à direita.",
+      "Claude Code"
+    );
+  }, 250);
+}
+
+function handleUserInput(text) {
+  if (state.currentFlow === "diagnostico") {
+    appendBubble("user", text, "$");
+    return processDiagAnswer(text);
+  }
+  if (state.currentFlow === "simulador") {
+    appendBubble("user", text, "$");
+    return processSimulador(text);
+  }
+  handleCommand(text);
+}
+
+/* ============================================
+   EVENTS
+   ============================================ */
+$form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const text = $input.value.trim();
+  if (!text) return;
+  $input.value = "";
+  handleUserInput(text);
+});
+
+document.querySelectorAll(".suggestions button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const cmd = btn.dataset.cmd;
+    handleUserInput(cmd);
+  });
+});
+
+$reset.addEventListener("click", () => {
+  $msgs.innerHTML = "";
+  state.currentFlow = null;
+  state.diagStep = 0;
+  state.diagPerfis = [];
+  state.simStep = 0;
+  bootstrap();
+});
+
+/* ============================================
+   BOOTSTRAP
+   ============================================ */
+function bootstrap() {
+  appendSystem("Sessão · " + now() + " · ~/agencia-ia");
+  setTimeout(() => appendBubble("claude", "Olá! Eu sou o Claude da ZX LAB. Esse é um mockup de como as 5 skills do Setup 8 funcionam dentro do Claude Code no seu Mac.\n\nClica numa sugestão à direita pra ver uma skill rodando, ou digita o nome de um comando.", "Claude Code · setup-8"), 400);
+  setTimeout(() => appendBubble("claude", "💡 Recomendo começar por /diagnostico-empreendedor — é a skill que vai te ajudar a entender qual área da agência IA combina com seu perfil.", "Claude Code · setup-8"), 1500);
+}
+
+bootstrap();
+</script>
+
 </body>
 </html>

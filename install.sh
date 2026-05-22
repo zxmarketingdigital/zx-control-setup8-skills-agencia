@@ -97,7 +97,9 @@ if [ "$DRY_RUN" = false ]; then
     mv "$LML_DST" "$LML_DST.bak-$(date +%s)"
     warn "Lead Machine Lite já existia em $LML_DST — backup criado em $LML_DST.bak-*"
   fi
-  cp -r "$LML_SRC" "$LML_DST"
+  # Idempotente: SRC/. -> DST/ não cria nested mesmo se DST já existir
+  mkdir -p "$LML_DST"
+  cp -r "$LML_SRC/." "$LML_DST/"
 fi
 ok "Lead Machine Lite copiado"
 
