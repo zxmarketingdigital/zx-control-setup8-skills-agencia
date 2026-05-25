@@ -17,25 +17,21 @@ Roteiro da aula em vídeo gravada pelo Rafael. Cortes referenciados por timestam
 
 ## Cortes (atualizar com BUNNY_GUID após upload)
 
-> ⚠️ **PLACEHOLDERS PENDENTES** — Os `BUNNY_GUID_S8_C*` abaixo são placeholders. **NÃO divulgar Setup 8 com esta tabela como está** — os iframes da área de membros vão quebrar.
+> ✅ **GUIDs reais preenchidos** — Aula gravada em 20/Mai/2026, 7 cortes únicos no Bunny library 629692. As linhas C8 e C9 da tabela são placeholders documentais que apontam pro vídeo principal (o conteúdo desses blocos foi integrado naturalmente na aula completa, não cortado separado).
 >
-> Fluxo correto antes de divulgar:
-> 1. Gravar a aula (~60 min).
-> 2. Rodar `/cortar-aula-setup --gravacao /caminho/setup8.mp4 --setup 8` — esse comando faz upload no Bunny e popula os GUIDs reais aqui automaticamente.
-> 3. Verificar que TODOS os 9 GUIDs viraram hashes reais (`abc12345-def6-...`) — nenhum começa com `BUNNY_GUID_`.
-> 4. SÓ ENTÃO rodar `/setup-area-membros-add --setup 8` e `/setup-divulgar`.
+> Áreas de membros v2.0 e v3.0 já estão deployadas com os GUIDs reais nos painéis s8-0 e s8-5.
 
 | # | Título | Start | End | Bunny GUID |
 |---|--------|-------|-----|------------|
-| 1 | Visão geral das 6 ferramentas + Lead Machine | 00:00 | MM:SS | `BUNNY_GUID_S8_C1` _(preencher após gravação)_ |
-| 2 | Instalação com install.sh (demo ao vivo) | MM:SS | MM:SS | `BUNNY_GUID_S8_C2` _(preencher após gravação)_ |
-| 3 | /diagnostico-empreendedor — fluxo completo | MM:SS | MM:SS | `BUNNY_GUID_S8_C3` _(preencher após gravação)_ |
-| 4 | /simulador-vendas + /analise-call em ação | MM:SS | MM:SS | `BUNNY_GUID_S8_C4` _(preencher após gravação)_ |
-| 5 | /prototipar-sistema + /criar-orcamento | MM:SS | MM:SS | `BUNNY_GUID_S8_C5` _(preencher após gravação)_ |
-| 6 | Lead Machine Lite — LP pública + dashboard + tunnel | MM:SS | MM:SS | `BUNNY_GUID_S8_C6` _(preencher após gravação)_ |
-| 7 | **CASE Sabor Carioca — 5 erros + frases-modelo** | MM:SS | MM:SS | `BUNNY_GUID_S8_C7` _(preencher após gravação)_ |
-| 8 | /pre-call-checklist + drill `--focus` | MM:SS | MM:SS | `BUNNY_GUID_S8_C8` _(preencher após gravação)_ |
-| 9 | Casos de uso reais + próximos passos | MM:SS | MM:SS | `BUNNY_GUID_S8_C9` _(preencher após gravação)_ |
+| 1 | Visão geral das 6 ferramentas + Lead Machine | 00:00 | MM:SS | `603e5979-3851-4407-95ed-fffd73229386` |
+| 2 | Instalação com install.sh (demo ao vivo) | MM:SS | MM:SS | `0729a0ff-31a1-416d-8f88-284e25fb15a9` |
+| 3 | /diagnostico-empreendedor — fluxo completo | MM:SS | MM:SS | `ec90e515-1e9b-4340-882b-3a02e2c30877` |
+| 4 | /simulador-vendas + /analise-call em ação | MM:SS | MM:SS | `e14388aa-a63f-4771-9f41-001fb6e3f952` |
+| 5 | /prototipar-sistema + /criar-orcamento | MM:SS | MM:SS | `afa1f569-14c5-42ea-ae73-e7425dc0fb7c` |
+| 6 | Lead Machine Lite — LP pública + dashboard + tunnel | MM:SS | MM:SS | `12a0f835-ea34-4960-93e8-89750e02337a` |
+| 7 | **CASE Sabor Carioca — 5 erros + frases-modelo** | MM:SS | MM:SS | `81c47449-3978-4f5d-9be9-391e2df2b92b` |
+| 8 | /pre-call-checklist + drill `--focus` | MM:SS | MM:SS | `603e5979-3851-4407-95ed-fffd73229386` |
+| 9 | Casos de uso reais + próximos passos | MM:SS | MM:SS | `603e5979-3851-4407-95ed-fffd73229386` |
 
 
 ## Roteiro
@@ -157,7 +153,7 @@ Após gravar e cortar:
 
 - [ ] Cortes salvos em `~/Movies/setup8-cortes/`
 - [ ] Upload Bunny: `/cortar-aula-setup --gravacao /path/setup8.mp4 --setup 8`
-- [ ] BUNNY_GUIDs preenchidos nesta tabela (substituir `BUNNY_GUID_S8_C*`)
+- [x] BUNNY_GUIDs preenchidos na tabela acima (7 GUIDs únicos do Bunny library 629692, gravação 20/Mai/2026)
 - [ ] Commit + push do MASTERCLASS.md atualizado
 - [ ] Painel S8-0 das áreas de membros atualizado com GUIDs reais
 - [ ] Re-deploy CF Pages das turmas-alvo
