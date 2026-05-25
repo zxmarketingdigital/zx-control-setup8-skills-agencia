@@ -77,15 +77,32 @@ R$ X.XXX,XX
 
 ### 4. Pós-processo local (envelope MD, fora do output do prompt)
 
-Depois que o output da IA estiver pronto e validado, montar o arquivo `.md` final como envelope adicionando título + data **como wrapper local**, NUNCA como parte do prompt/output da IA:
+Depois que o output da IA estiver pronto e validado, montar o arquivo `.md` final como envelope adicionando título + data + **bloco de condições comerciais** (com recorrência mensal **no header, não enterrada**), NUNCA como parte do prompt/output da IA:
 
 ```markdown
 # Proposta — {NOME DO CLIENTE}
 
 **Data:** {YYYY-MM-DD}
 
+> **Investimento:** Setup R$ {setup_value} (único) + R$ {recurring_value}/mês (manutenção)
+> **Prazo:** {duracao} dias · **Garantia:** 30 dias sem multa
+
 {OUTPUT LITERAL DA IA — 4 seções 🔹 acima, intactas}
+
+---
+
+## Condições comerciais
+
+| Item | Valor |
+|---|---|
+| Setup único | R$ {setup_value} |
+| Manutenção mensal | R$ {recurring_value}/mês |
+| Prazo de entrega | {duracao} dias |
+| Garantia de cancelamento | 30 dias sem multa |
+| Fidelidade | Sem fidelidade |
 ```
+
+**REGRA ANTI-OMISSÃO:** Se a proposta tem componente recorrente (mensalidade, manutenção, hosting), a recorrência DEVE aparecer no header do envelope MD (bloco `> **Investimento:**`) **antes** das 4 seções 🔹. Esconder mensalidade até os detalhes finais quebra confiança quando o cliente lê a primeira página.
 
 Esse envelope serve só pra organização do arquivo salvo em disco. O texto que vai pra plataforma de freelancing (campo "Detalhes") é apenas o conteúdo de `🔹 DETALHES DA PROPOSTA` — sem título, sem data, sem o restante.
 
@@ -337,9 +354,50 @@ Antes de salvar:
 - [ ] Sem emojis no corpo do texto (exceto os 🔹 dos headers)
 - [ ] Texto em primeira pessoa
 - [ ] Sem "garantia de resultado" ou variações
+- [ ] **Se proposta tem componente recorrente:** recorrência aparece no header do envelope MD (não enterrada)
+- [ ] **ROI quantificado:** se aluno informou perda mensal do cliente, comparação setup × perda × payback aparece em `DETALHES`
+- [ ] **Sem case real:** se vertical nova, há menção explícita de garantia 30 dias sem multa em `DETALHES`
 
 Se falhar qualquer item, reexecutar prompt antes de salvar arquivos.
+
+## Calculadora ROI por nicho (anti-subcobrança)
+
+A skill deve coletar — quando o aluno tiver — o **valor mensal de perda do cliente** antes de gerar a proposta. Esse número ancora o preço no envelope MD e dentro de `DETALHES DA PROPOSTA`, evitando o erro clássico de "subcobrei R$ 500 porque improvisei na hora".
+
+Presets por nicho (aluno pode customizar):
+
+| Nicho | Variáveis a coletar | Fórmula de perda mensal |
+|---|---|---|
+| **Restaurante** | mesas perdidas/semana, ticket médio | `mesas_perdidas × ticket_medio × 4` |
+| **E-commerce** | leads perdidos/dia, conversão, ticket médio | `leads_perdidos × conv_rate × ticket × 30` |
+| **Clínica/Consultório** | pacientes no-show/semana, valor consulta | `no_shows × valor_consulta × 4` |
+| **Agência/Serviço B2B** | leads perdidos/mês, valor médio do deal, taxa fechamento | `leads × deal_value × close_rate` |
+| **Serviço local (estética, oficina, pet)** | clientes perdidos/semana, ticket médio | `clientes_perdidos × ticket × 4` |
+
+**Como usar no prompt:** se o aluno fornecer `perda_mensal_cliente: R$ X`, incluir no `project_description` enviado ao SYSTEM_PROMPT:
+
+```
+Perda mensal estimada do cliente por NÃO ter essa solução: R$ {perda_mensal}
+Setup proposto: R$ {setup_value}
+Recorrência: R$ {recurring}/mês
+Payback: {round(setup_value / perda_mensal * 30, 1)} dias
+```
+
+A IA vai naturalmente incluir esse ROI em `DETALHES DA PROPOSTA` (regra do prompt: "Clareza sobre investimento x retorno esperado").
+
+## Template "sem case real" (anti-prova-social-fabricada)
+
+Quando o aluno está vendendo em vertical nova (nenhum cliente real ainda), a tentação é inventar "vários cases" ou "estatísticas de mercado". Isso destrói credibilidade na primeira pergunta crítica do cliente.
+
+**Regra:** se aluno marcar `vertical_nova: true` (ou não souber responder "tem case real?" com nome + telefone verificável), o `project_description` enviado ao SYSTEM_PROMPT deve incluir explicitamente:
+
+```
+Observação para a proposta: vertical nova para o vendedor — sem cases prévios no segmento. Posicionar com transparência + oferta de garantia de cancelamento sem multa nos primeiros 30 dias, para que o cliente veja o resultado no próprio negócio antes de qualquer compromisso de longo prazo.
+```
+
+A IA vai incorporar isso em `DETALHES DA PROPOSTA` como argumento de credibilidade ("garantia 30 dias" > "vários cases inventados").
 
 ## Ver também
 
 - `reference.md` — tabela origem→trecho→adaptação e comandos pandoc/puppeteer
+- `_shared/objections-bank/agente-ia-whatsapp.yaml` — banco de objeções por segmento (consumido por `/simulador-vendas` e `/analise-call`)

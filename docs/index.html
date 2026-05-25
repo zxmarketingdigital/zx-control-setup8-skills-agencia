@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Setup 8 · Skills da Agência IA + Lead Machine no seu Mac — ZX Control</title>
-<meta name="description" content="5 skills profissionais + máquina de leads rodando direto no seu Mac via Claude Code. Sem mensalidade, sem nuvem, sem fricção.">
+<meta name="description" content="6 skills profissionais + máquina de leads rodando direto no seu Mac via Claude Code. Sem mensalidade, sem nuvem, sem fricção.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -171,7 +171,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  scroll-behavior: smooth;
 }
 .term-messages::-webkit-scrollbar { width: 6px; }
 .term-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
@@ -184,8 +183,9 @@ body {
   line-height: 1.5;
   word-wrap: break-word;
   white-space: pre-wrap;
-  animation: pop .22s ease-out;
 }
+/* Animação só na última bolha — evita acúmulo de animations em GPU */
+.term-messages > .bubble:last-child { animation: pop .22s ease-out; }
 @keyframes pop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .bubble .meta {
   display: block;
@@ -527,9 +527,9 @@ body {
 <section class="hero">
   <span class="tag">Setup 8 · ZX Control Scale</span>
   <h1>Skills da Agência IA + <span class="amber">máquina de leads</span> rodando no seu Mac</h1>
-  <p>5 skills profissionais direto no Claude Code + Lead Machine Lite com LP pública. Sem mensalidade, sem nuvem, sem depender de SaaS. Instalado em 1 comando.</p>
+  <p>6 skills profissionais direto no Claude Code + Lead Machine Lite com LP pública. Sem mensalidade, sem nuvem, sem depender de SaaS. Instalado em 1 comando.</p>
   <div class="stats-line">
-    <strong>5</strong> skills · <strong>1</strong> LP pública · <strong>1</strong> dashboard local · <strong>0</strong> mensalidades · <strong>~15min</strong> de setup
+    <strong>6</strong> skills · <strong>1</strong> LP pública · <strong>1</strong> dashboard local · <strong>0</strong> mensalidades · <strong>~15min</strong> de setup
   </div>
 </section>
 
@@ -564,6 +564,8 @@ body {
         <button data-cmd="/diagnostico-empreendedor">/diagnostico-empreendedor<span class="label">5 perguntas → seu perfil + plano 30d</span></button>
         <button data-cmd="/simulador-vendas">/simulador-vendas<span class="label">Treinar abordagem com cliente IA</span></button>
         <button data-cmd="/criar-orcamento">/criar-orcamento<span class="label">Proposta comercial em 3 minutos</span></button>
+        <button data-cmd="/analise-call">/analise-call<span class="label">Feedback + Risk Flags na call</span></button>
+        <button data-cmd="/pre-call-checklist">/pre-call-checklist<span class="label">6 itens antes de qualquer call</span></button>
         <button data-cmd="/lead-machine-lite">/lead-machine-lite<span class="label">LP pública + dashboard de leads</span></button>
       </div>
     </div>
@@ -573,7 +575,7 @@ body {
       <div class="info-grid">
         <div class="info-item">
           <div class="label">Skills</div>
-          <div class="value">5 prontas</div>
+          <div class="value">6 prontas</div>
         </div>
         <div class="info-item">
           <div class="label">Custo</div>
@@ -595,7 +597,7 @@ body {
 </main>
 
 <section class="skills-section">
-  <h2>5 skills + Lead Machine prontos pra usar</h2>
+  <h2>6 skills + Lead Machine prontos pra usar</h2>
   <p class="lead">Tudo instalado direto em <code style="font-family: 'JetBrains Mono', monospace; color: var(--primary-bright);">~/.claude/skills/</code> — aparecem como comandos no Claude Code imediatamente.</p>
 
   <div class="skills-grid">
@@ -606,8 +608,8 @@ body {
     </div>
     <div class="skill-card">
       <div class="cmd">/analise-call</div>
-      <div class="what">Feedback de call comercial</div>
-      <div class="desc">Cole o resumo da call (ou puxa do Zoom) → identifica objeções perdidas, gatilhos não usados, script de follow-up.</div>
+      <div class="what">Feedback de call + Risk Flags</div>
+      <div class="desc">Cole o resumo da call → identifica objeções perdidas + Risk Flags 🔴🟡🟢 nos 5 erros mais caros (desvio preço, omissão recorrência, sem-case).</div>
     </div>
     <div class="skill-card">
       <div class="cmd">/prototipar-sistema</div>
@@ -616,13 +618,18 @@ body {
     </div>
     <div class="skill-card">
       <div class="cmd">/simulador-vendas</div>
-      <div class="what">Treinar abordagem comercial</div>
-      <div class="desc">Você define perfil do lead, a skill simula objeções e respostas → feedback estruturado ao final.</div>
+      <div class="what">Treinar com --focus dirigido</div>
+      <div class="desc">Você define perfil do lead, a skill simula objeções. Suporta `--focus desvio-preco / omissao-mensalidade / sem-case / sem-discovery / subcobrar`.</div>
     </div>
     <div class="skill-card">
       <div class="cmd">/criar-orcamento</div>
-      <div class="what">Proposta comercial em PDF</div>
-      <div class="desc">Cliente + escopo + valor → proposta estruturada em Markdown + PDF pronta pra fechar.</div>
+      <div class="what">Proposta com ROI por nicho</div>
+      <div class="desc">Cliente + escopo + valor → proposta com recorrência no header + calculadora ROI (restaurante/ecommerce/clínica/agência/serviço local).</div>
+    </div>
+    <div class="skill-card">
+      <div class="cmd">/pre-call-checklist</div>
+      <div class="what">Anti-improvisação na call</div>
+      <div class="desc">6 itens obrigatórios antes de qualquer call: dor quantificada, decisor, segmento, preço memorizado, cases, 5 ações concretas + 3 frases-modelo prontas.</div>
     </div>
     <div class="skill-card" style="border-color: var(--primary-dark); background: linear-gradient(180deg, var(--surface2), var(--surface));">
       <div class="cmd">/lead-machine-lite</div>
@@ -652,7 +659,7 @@ INICIAR SETUP SEMANA 8</pre>
 
 <footer class="footer">
   <p><span class="brand">ZX LAB</span> · Setup 8 do ZX Control Scale · Skills da Agência IA + Lead Machine Lite</p>
-  <p>Repo público: <a href="https://github.com/zxmarketingdigital/zx-control-setup8-skills-agencia">github.com/zxmarketingdigital/zx-control-setup8-skills-agencia</a></p>
+  <p>Repo público: <a href="https://github.com/zxmarketingdigital/zx-control-setup8-skills-agencia" rel="noopener noreferrer">github.com/zxmarketingdigital/zx-control-setup8-skills-agencia</a></p>
 </footer>
 
 <script>
@@ -772,6 +779,50 @@ Próximos passos:
 
 Aguardando primeiro lead... 👀`;
 
+const ANALISE_CALL_OUTPUT = `📞 ANÁLISE — Call Marcos (Padaria Vovó Maria) · 18min
+──────────────────────────────────────────────────
+Objeções identificadas: 3
+ 1. Preço alto vs concorrente   ✓ tratada (caso real)
+ 2. Tempo de retorno             ✗ não tratada (sem prazo)
+ 3. Pagamento mensal             ✗ omitida 2x
+
+🚨 RISK FLAGS:
+ 🔴 Desvio de preço          → respondeu com desconto
+ 🟡 Omissão recorrência      → só falou setup, não mensalidade
+ 🟡 Sem case de padaria      → citou só restaurante
+
+Próximas ações:
+ ✓ Follow-up amanhã 09h com case Padaria Doce Sabor
+ ✓ Refazer proposta destacando recorrência R$ 297/mês
+ ✓ Quebrar objeção tempo: "primeiro lead qualificado em 7 dias"
+
+✓ Salvo em ~/clientes/padaria-vovo-maria/calls/2026-05-21.md`;
+
+const PRE_CALL_OUTPUT = `✅ PRE-CALL CHECKLIST — Marcos (Padaria) · sex 22/05 15h
+─────────────────────────────────────────────────────
+[1/6] Dor quantificada
+      → "5 pedidos/dia perdidos × R$ 80 ticket = R$ 12k/mês de prejuízo"
+
+[2/6] Decisor confirmado
+      → Marcos (sócio + dono operacional). Patrícia também aprova.
+
+[3/6] Segmento + benchmark
+      → Padaria 5 funcs, R$ 80k/mês. Benchmark: 30% economia em call center.
+
+[4/6] Preço memorizado
+      → Setup R$ 1.500 · Mensal R$ 297 (NÃO desconta abaixo de 250)
+
+[5/6] Cases relevantes
+      → Padaria Doce Sabor (RJ, 2 meses, +28% pedidos delivery)
+      → Padaria Vila Bela (SP, 3 meses, -65% chamadas perdidas)
+
+[6/6] 3 frases-modelo prontas
+      → Abertura: "Você fala que perde 5 pedidos/dia. Sabe quanto isso vira em receita?"
+      → Quebra preço: "R$ 297/mês = 4 pedidos recuperados. Já paga sozinho."
+      → Fechamento: "Posso te entregar setup essa semana. Aprova?"
+
+✓ Pronto. Vai bem na call!`;
+
 /* ============================================
    ESTADO + UI
    ============================================ */
@@ -780,7 +831,23 @@ const state = {
   diagStep: 0,
   diagPerfis: [],
   simStep: 0,
+  timeouts: [],  // IDs de setTimeout pendentes — limpos no reset
 };
+
+// Wrapper de setTimeout que registra o ID pra cleanup posterior
+function trackTimeout(fn, ms) {
+  const id = setTimeout(() => {
+    state.timeouts = state.timeouts.filter(x => x !== id);
+    fn();
+  }, ms);
+  state.timeouts.push(id);
+  return id;
+}
+
+function clearAllTimeouts() {
+  state.timeouts.forEach(id => clearTimeout(id));
+  state.timeouts = [];
+}
 
 const $msgs = document.getElementById("msgs");
 const $form = document.getElementById("form");
@@ -834,7 +901,7 @@ function hideTyping() {
 function respondClaude(text, meta, delay) {
   const d = delay !== undefined ? delay : 700 + Math.random() * 500;
   showTyping();
-  setTimeout(() => {
+  trackTimeout(() => {
     hideTyping();
     appendBubble("claude", text, meta || "Claude Code");
   }, d);
@@ -843,7 +910,7 @@ function respondClaude(text, meta, delay) {
 function respondSkill(text, meta, delay) {
   const d = delay !== undefined ? delay : 900 + Math.random() * 400;
   showTyping();
-  setTimeout(() => {
+  trackTimeout(() => {
     hideTyping();
     appendBubble("skill-output", text, meta);
   }, d);
@@ -857,12 +924,12 @@ function startDiagnostico() {
   state.currentFlow = "diagnostico";
   state.diagStep = 0;
   state.diagPerfis = [];
-  setTimeout(() => {
+  trackTimeout(() => {
     respondClaude(
-      "Vou te fazer 5 perguntas curtas pra entender seu perfil de empreendedor e sugerir áreas de atuação alinhadas + um plano de 30 dias pra começar.\n\nResponde com o número da opção (1, 2 ou 3).",
+      "Vou te fazer 5 perguntas curtas pra entender seu perfil de empreendedor e sugerir áreas de atuação alinhadas + um plano de 30 dias pra começar.\n\nResponde com o número da opção (1, 2 ou 3). Digite *fim* a qualquer momento pra encerrar.",
       "diagnostico-empreendedor"
     );
-    setTimeout(() => askDiagQuestion(), 1800);
+    trackTimeout(() => askDiagQuestion(), 1800);
   }, 250);
 }
 
@@ -893,7 +960,7 @@ function processDiagAnswer(text) {
   const escolha = q.opcoes[idx];
   if (escolha.perfil) state.diagPerfis.push(escolha.perfil);
   state.diagStep++;
-  setTimeout(() => askDiagQuestion(), 800);
+  trackTimeout(() => askDiagQuestion(), 800);
 }
 
 function finishDiagnostico() {
@@ -905,10 +972,10 @@ function finishDiagnostico() {
 
   respondClaude("Analisando suas respostas...", "diagnostico-empreendedor");
 
-  setTimeout(() => {
+  trackTimeout(() => {
     const txt = `🎯 SEU PERFIL: ${perfil.nome}\n\n${perfil.descricao}\n\n3 áreas de atuação pra você:\n${perfil.areas.map((a,i)=>`${i+1}. ${a}`).join("\n")}\n\nPLANO 30 DIAS:\n${PLANO_30D.join("\n")}`;
     respondSkill(txt, "Output → diagnostico-empreendedor");
-    setTimeout(() => {
+    trackTimeout(() => {
       respondClaude("✓ Perfil completo. Resultado salvo em ~/.operacao-ia/diagnostico.json\n\nQuer testar outra skill? Clica numa das sugestões à direita →", "diagnostico-empreendedor");
       state.currentFlow = null;
     }, 2200);
@@ -919,9 +986,9 @@ function startSimulador() {
   appendBubble("user", "/simulador-vendas", "$");
   state.currentFlow = "simulador";
   state.simStep = 0;
-  setTimeout(() => {
+  trackTimeout(() => {
     respondClaude(
-      "Vou simular um lead pra você treinar abordagem comercial.\n\nCenário: dono de padaria de bairro, 5 funcionários, fatura R$ 80k/mês. Procura solução de atendimento WhatsApp.\n\nManda sua abertura — eu respondo como o lead.",
+      "Vou simular um lead pra você treinar abordagem comercial.\n\nCenário: dono de padaria de bairro, 5 funcionários, fatura R$ 80k/mês. Procura solução de atendimento WhatsApp.\n\nManda sua abertura — eu respondo como o lead. Digite *fim* a qualquer momento pra encerrar.",
       "simulador-vendas"
     );
   }, 300);
@@ -933,11 +1000,11 @@ function processSimulador(text) {
     state.currentFlow = null;
     return;
   }
-  setTimeout(() => {
+  trackTimeout(() => {
     respondClaude(SIMULADOR_RESPOSTAS[state.simStep], "Lead simulado (Marcos · Padaria)");
     state.simStep++;
     if (state.simStep === SIMULADOR_RESPOSTAS.length) {
-      setTimeout(() => {
+      trackTimeout(() => {
         respondClaude("Mais respostas? Digite *fim* pra encerrar simulação.", "simulador-vendas");
       }, 1400);
     }
@@ -946,11 +1013,11 @@ function processSimulador(text) {
 
 function runOrcamento() {
   appendBubble("user", "/criar-orcamento", "$");
-  setTimeout(() => {
+  trackTimeout(() => {
     respondClaude("Cliente, escopo e valor recebidos. Gerando proposta estruturada...", "criar-orcamento");
-    setTimeout(() => {
+    trackTimeout(() => {
       respondSkill(ORCAMENTO_OUTPUT, "Output → criar-orcamento");
-      setTimeout(() => {
+      trackTimeout(() => {
         respondClaude("✓ PDF gerado. Tudo pronto pra você enviar pro cliente.", "criar-orcamento");
       }, 2000);
     }, 1400);
@@ -959,10 +1026,36 @@ function runOrcamento() {
 
 function runLeadMachine() {
   appendBubble("user", "/lead-machine-lite", "$");
-  setTimeout(() => {
+  trackTimeout(() => {
     respondClaude("Subindo backend + tunnel + dashboard...", "lead-machine-lite");
-    setTimeout(() => {
+    trackTimeout(() => {
       respondSkill(LEAD_MACHINE_OUTPUT, "Output → lead-machine-lite");
+    }, 1500);
+  }, 300);
+}
+
+function runAnaliseCall() {
+  appendBubble("user", "/analise-call", "$");
+  trackTimeout(() => {
+    respondClaude("Recebi resumo da call. Analisando objeções e gerando Risk Flags...", "analise-call");
+    trackTimeout(() => {
+      respondSkill(ANALISE_CALL_OUTPUT, "Output → analise-call");
+      trackTimeout(() => {
+        respondClaude("✓ Análise salva. Quer simular o follow-up com /simulador-vendas?", "analise-call");
+      }, 2200);
+    }, 1500);
+  }, 300);
+}
+
+function runPreCallChecklist() {
+  appendBubble("user", "/pre-call-checklist", "$");
+  trackTimeout(() => {
+    respondClaude("Cliente: Marcos (Padaria). Montando checklist anti-improvisação...", "pre-call-checklist");
+    trackTimeout(() => {
+      respondSkill(PRE_CALL_OUTPUT, "Output → pre-call-checklist");
+      trackTimeout(() => {
+        respondClaude("✓ Checklist pronto. Bora pra call! 🎯", "pre-call-checklist");
+      }, 2400);
     }, 1500);
   }, 300);
 }
@@ -972,17 +1065,59 @@ function handleCommand(text) {
   if (cmd === "/diagnostico-empreendedor" || cmd === "diagnostico") return startDiagnostico();
   if (cmd === "/simulador-vendas" || cmd === "simulador") return startSimulador();
   if (cmd === "/criar-orcamento" || cmd === "orcamento") return runOrcamento();
+  if (cmd === "/analise-call" || cmd === "analise-call") return runAnaliseCall();
+  if (cmd === "/pre-call-checklist" || cmd === "pre-call-checklist" || cmd === "checklist") return runPreCallChecklist();
   if (cmd === "/lead-machine-lite" || cmd === "lead-machine" || cmd === "lead") return runLeadMachine();
   appendBubble("user", text, "$");
-  setTimeout(() => {
+  trackTimeout(() => {
     respondClaude(
-      "Hmm, não reconheci esse comando. Tenta uma das skills do Setup 8:\n\n• /diagnostico-empreendedor\n• /simulador-vendas\n• /criar-orcamento\n• /lead-machine-lite\n\nOu clica numa sugestão à direita.",
+      "Hmm, não reconheci esse comando. Tenta uma das skills do Setup 8:\n\n• /diagnostico-empreendedor\n• /simulador-vendas\n• /criar-orcamento\n• /analise-call\n• /pre-call-checklist\n• /lead-machine-lite\n\nOu clica numa sugestão à direita.",
+      "Claude Code"
+    );
+  }, 250);
+}
+
+// Comandos globais que funcionam DENTRO de qualquer flow
+function isGlobalAbortCommand(text) {
+  const t = text.trim().toLowerCase();
+  return t === "/reset" || t === "fim" || t === "/cancelar" || t === "cancelar";
+}
+
+function abortCurrentFlow() {
+  // Limpa estado in-flight e timeouts pendentes do flow anterior
+  clearAllTimeouts();
+  const flow = state.currentFlow;
+  state.currentFlow = null;
+  state.diagStep = 0;
+  state.diagPerfis = [];
+  state.simStep = 0;
+  trackTimeout(() => {
+    respondClaude(
+      flow
+        ? `OK, encerrei ${flow}. Pode rodar outra skill quando quiser. 👍`
+        : "OK, sem flow em andamento. Pode digitar um comando.",
       "Claude Code"
     );
   }, 250);
 }
 
 function handleUserInput(text) {
+  // Abort global ANTES de qualquer roteamento
+  if (isGlobalAbortCommand(text) && state.currentFlow) {
+    appendBubble("user", text, "$");
+    return abortCurrentFlow();
+  }
+  // Guard: se já tem flow ativo e usuário tenta NOVO comando "/algo", avisa
+  if (state.currentFlow && /^\/\w/.test(text.trim())) {
+    appendBubble("user", text, "$");
+    trackTimeout(() => {
+      respondClaude(
+        `Já tem um *${state.currentFlow}* em andamento. Digite *fim* pra encerrar e depois rode outra skill.`,
+        "Claude Code"
+      );
+    }, 200);
+    return;
+  }
   if (state.currentFlow === "diagnostico") {
     appendBubble("user", text, "$");
     return processDiagAnswer(text);
@@ -1013,6 +1148,7 @@ document.querySelectorAll(".suggestions button").forEach(btn => {
 });
 
 $reset.addEventListener("click", () => {
+  clearAllTimeouts();
   $msgs.innerHTML = "";
   state.currentFlow = null;
   state.diagStep = 0;
@@ -1026,8 +1162,8 @@ $reset.addEventListener("click", () => {
    ============================================ */
 function bootstrap() {
   appendSystem("Sessão · " + now() + " · ~/agencia-ia");
-  setTimeout(() => appendBubble("claude", "Olá! Eu sou o Claude da ZX LAB. Esse é um mockup de como as 5 skills do Setup 8 funcionam dentro do Claude Code no seu Mac.\n\nClica numa sugestão à direita pra ver uma skill rodando, ou digita o nome de um comando.", "Claude Code · setup-8"), 400);
-  setTimeout(() => appendBubble("claude", "💡 Recomendo começar por /diagnostico-empreendedor — é a skill que vai te ajudar a entender qual área da agência IA combina com seu perfil.", "Claude Code · setup-8"), 1500);
+  trackTimeout(() => appendBubble("claude", "Olá! Eu sou o Claude da ZX LAB. Esse é um mockup de como as 6 skills do Setup 8 funcionam dentro do Claude Code no seu Mac.\n\nClica numa sugestão à direita pra ver uma skill rodando, ou digita o nome de um comando.", "Claude Code · setup-8"), 400);
+  trackTimeout(() => appendBubble("claude", "💡 Recomendo começar por /diagnostico-empreendedor — é a skill que vai te ajudar a entender qual área da agência IA combina com seu perfil.", "Claude Code · setup-8"), 1500);
 }
 
 bootstrap();

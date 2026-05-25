@@ -25,7 +25,8 @@ A partir daí o setup é guiado — 5 etapas, cada uma com explicação + execu�
 
 ## O que será instalado
 
-- **5 Skills Bloco A** — Copie pra ~/.claude/skills/ e ficam disponíveis imediatamente no Claude Code
+- **6 Skills Bloco A** — Copie pra ~/.claude/skills/ e ficam disponíveis imediatamente no Claude Code
+- **Banco de objeções compartilhado** — `~/.claude/skills/_shared/objections-bank/` YAML por segmento, consumido por simulador/análise/orçamento
 - **Lead Machine Lite backend** — FastAPI na porta local com LaunchAgent — inicia no boot do Mac
 - **Cloudflared tunnel** — Expõe a LP de captação publicamente via URL pública
 - **Lead Machine dashboard** — Interface local para gerenciar e visualizar leads
@@ -48,10 +49,11 @@ skills-agencia/
 
 ```
 /diagnostico-empreendedor   Diagnóstico completo do seu perfil de empreendedor + plano 30d
-/analise-call               Análise de call de vendas com feedback estruturado
+/analise-call               Análise de call de vendas com feedback + Risk Flags 🔴🟡🟢
 /prototipar-sistema         Gera brief + protótipo HTML interativo pra cliente
-/simulador-vendas           Simula lead pra você treinar a abordagem
-/criar-orcamento            Proposta comercial estruturada em 3 minutos
+/simulador-vendas           Simula lead — suporta --focus desvio-preco/omissao-mensalidade/sem-case
+/criar-orcamento            Proposta com recorrência no header + ROI por nicho
+/pre-call-checklist         Checklist obrigatório antes de qualquer call — 6 itens + frases-modelo
 /lead-machine-lite          Wizard completo: criar leads, ver diagnósticos, gerenciar tunnel
 
 ```

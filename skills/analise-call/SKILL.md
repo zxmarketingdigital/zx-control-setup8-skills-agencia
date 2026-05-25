@@ -221,6 +221,18 @@ Estrutura do arquivo `~/calls/{cliente-slug}/call-{YYYY-MM-DD}.md`:
 
 ## Script de Follow-up sugerido
 (Claude gera mensagem WhatsApp/email curta baseada em `next_call_focus` + `qualification.proximo_passo` — esta seção é EXTRA, não vem do schema original, fica claramente marcada.)
+
+## Risk Flags (extensão ZX LAB — NÃO vem do schema original)
+Análise heurística da transcrição em 5 categorias de erro críticos que aparecem em call de venda de Agente IA WhatsApp:
+
+- 🔴 **Desvio de preço** — cliente perguntou preço ≥ 2x sem receber número claro
+- 🔴 **Omissão de recorrência** — vendedor mencionou setup mas nunca mencionou mensalidade
+- 🔴 **Prova social fabricada** — vendedor citou "vários cases" / estatísticas genéricas sem nome verificável
+- 🟡 **Discovery insuficiente** — < 2 perguntas abertas do vendedor nos primeiros 3 turnos
+- 🟡 **Decisor não identificado** — nenhuma pergunta sobre quem decide / dupla decisão / financeiro
+- 🟢 **OK** — quando categoria foi bem executada
+
+Cada flag tem 1 frase explicando o trigger + link pra treinar via `/simulador-vendas --focus <categoria>`.
 ```
 
 ### Etapa 6 — Gerar HTML + Registrar no Painel ZX LAB (obrigatório)
@@ -273,3 +285,71 @@ Estilo dark ZX LAB (âmbar #D97706 + Inter + JetBrains Mono, fundo #0D0D0D). Ver
 - Rate limit / 429 / 402 do AI Gateway Lovable — não aplicável (Claude roda local).
 
 Detalhes em `reference.md`.
+
+---
+
+## Risk Flags — heurística local (extensão ZX LAB)
+
+Calculada **fora do SYSTEM_PROMPT literal**, após o output JSON do analisador. NÃO altera o schema oficial — adiciona uma seção extra no MD com tag clara `(extensão ZX LAB)`.
+
+### Gate de transcrição mínima (anti-falso-positivo)
+
+**Antes de calcular qualquer flag**, validar `len(transcript.strip()) >= 200` caracteres.
+
+Razão: transcrição curta (< 200 chars) ou vazia faz todas as regex retornarem zero matches, e a heurística marca tudo 🟢 — gerando relatório "tudo ok" pra uma call que nem aconteceu. Aluno toma decisão errada baseada em falso positivo.
+
+```python
+MIN_TRANSCRIPT_CHARS = 200
+
+def calcular_risk_flags(transcript: str) -> dict:
+    transcript_clean = transcript.strip()
+    if len(transcript_clean) < MIN_TRANSCRIPT_CHARS:
+        return {
+            flag: {
+                "status": "🟡",
+                "nota": f"Transcrição insuficiente ({len(transcript_clean)} chars; mínimo: {MIN_TRANSCRIPT_CHARS}). Análise heurística não-confiável — cole a transcrição completa ou puxe via MCP Zoom."
+            }
+            for flag in ["desvio_preco", "omissao_recorrencia", "prova_social_fabricada", "discovery_insuficiente", "decisor_nao_identificado"]
+        }
+    # ... cálculo normal das 5 flags abaixo
+```
+
+Comportamento:
+- `len < 200` → todas as 5 flags marcadas 🟡 com nota explicativa idêntica, **e a tabela de Risk Flags do MD inclui um aviso no topo:**
+  > ⚠️ **Transcrição abaixo do mínimo recomendado (200 chars).** Risk Flags não calculadas — análise heurística requer transcrição completa.
+- `len >= 200` → calcular as 5 flags normalmente conforme tabela abaixo.
+
+### Cálculo das 5 flags
+
+| Flag | Trigger heurístico sobre a transcrição | Severidade |
+|---|---|---|
+| **Desvio de preço** | Regex sobre fala do cliente: `/quanto custa\|qual o preço\|qual valor\|tem como parcelar/i` → conta menções. Cruzar com respostas do vendedor: se ≥ 2 menções do cliente SEM número (`R$\s*\d`) na resposta seguinte → 🔴 | 🔴 |
+| **Omissão de recorrência** | Vendedor mencionou setup/implementação mas zero match em `/mensal\|por mês\|recorrência\|manutenção\|hosting/i` em qualquer fala dele → 🔴 | 🔴 |
+| **Prova social fabricada** | Vendedor disse `/vários cases\|muitos clientes\|estatística\|pesquisa de mercado/i` mas cliente exigiu `/nome\|telefone\|verificar/i` e vendedor não respondeu com nome próprio → 🔴 | 🔴 |
+| **Discovery insuficiente** | < 2 perguntas abertas (frases terminadas em `?` do vendedor) nos primeiros 3 turnos → 🟡 | 🟡 |
+| **Decisor não identificado** | `qualification.decisor === 'não identificado na call'` no output literal → 🟡 | 🟡 |
+
+### Output da seção no MD
+
+Anexar ao final do `~/calls/{slug}/call-{date}.md`:
+
+```markdown
+---
+
+## Risk Flags — extensão ZX LAB (não vem do schema original)
+
+| Flag | Status | Ação recomendada |
+|---|---|---|
+| Desvio de preço | 🔴/🟡/🟢 | {explicação 1 linha} → treinar com `/simulador-vendas --focus desvio-preco` |
+| Omissão de recorrência | 🔴/🟡/🟢 | {explicação} → treinar com `/simulador-vendas --focus omissao-mensalidade` |
+| Prova social fabricada | 🔴/🟡/🟢 | {explicação} → treinar com `/simulador-vendas --focus sem-case` |
+| Discovery insuficiente | 🔴/🟡/🟢 | {explicação} → treinar com `/simulador-vendas --focus sem-discovery` |
+| Decisor não identificado | 🔴/🟡/🟢 | {explicação} → treinar com `/simulador-vendas --focus sem-discovery` |
+```
+
+Status:
+- 🔴 quando o trigger heurístico bate (problema confirmado)
+- 🟡 quando há sinal mas é ambíguo (ex: cliente mencionou preço só 1x mas vendedor já desviou)
+- 🟢 quando categoria foi bem executada (preço respondido com número, recorrência mencionada, etc.)
+
+Se banco de objeções existe em `~/.claude/skills/_shared/objections-bank/agente-ia-whatsapp.yaml`, anexar também 2-3 frases-modelo correspondentes às flags 🔴 ativas.

@@ -1,0 +1,164 @@
+# Banco de objeções — Agente IA WhatsApp
+#
+# Consumido por:
+#   - /simulador-vendas (carrega bloco extra no clientPersona quando --focus está ativo)
+#   - /analise-call (anexa frases-modelo às Risk Flags 🔴 detectadas)
+#   - /criar-orcamento (consulta good_response_template ao gerar bloco "investimento × retorno" em DETALHES)
+#
+# Estrutura:
+#   segments.{nicho}.objections[]:
+#     id: identificador estável (snake_case)
+#     question: como o cliente costuma formular a objeção
+#     bad_response: anti-padrão (NÃO faça isso)
+#     good_response_template: estratégia recomendada (linguagem natural, copiável)
+#     tags: pra match com Risk Flags do /analise-call
+#
+# Regra de ouro: sempre que possível, REANCORAR no número que o próprio cliente já entregou
+# (perda mensal, ticket médio, volume de mensagens). Anti-improviso na hora.
+
+schema_version: 1
+last_updated: 2026-05-21
+
+segments:
+  restaurante:
+    contexto: "Restaurante / bar / lanchonete — receita perdida por atendimento WhatsApp lento. Ticket médio R$ 80-250. Decisor frequentemente em dupla (dono + sócio financeiro)."
+    objections:
+      - id: caro_setup
+        question: "R$ 1.500 de setup é bastante. Tem como parcelar?"
+        bad_response: "Aceitar imediatamente sem reancorar; dar desconto antes do cliente pedir."
+        good_response_template: "Reconhecer + reancorar no ROI já calculado pelo próprio cliente. Ex: 'Entendo. Mas você mesmo calculou que perde R$ 4 mil por mês com atendimento lento. O setup se paga em 11 dias. Prefere parcelar em 3x sem juros ou pagar à vista e já subir o agente essa semana?'"
+        tags: [preço, parcelamento, sensibilidade-preço]
+
+      - id: sem_case_real
+        question: "Vocês já atenderam restaurante? Tem case real com nome e telefone que eu possa conferir?"
+        bad_response: "Inventar 'pesquisa de mercado' ou 'vários cases' sem nome verificável."
+        good_response_template: "Transparência radical: 'Carlos, vou ser direto — pra restaurante a gente não tem volume de cases ainda, é vertical nova pra nós. O que eu te ofereço é setup com garantia de cancelamento sem multa nos primeiros 30 dias. Você vê o resultado no seu próprio número antes de qualquer compromisso de longo prazo.'"
+        tags: [prova-social, credibilidade, sem-case]
+
+      - id: socio_decide
+        question: "Preciso falar com meu sócio antes de fechar — ele cuida do financeiro."
+        bad_response: "Aceitar e mandar PDF por email, sem agendar próxima call com o sócio."
+        good_response_template: "Propor incluir o sócio numa call de 15 minutos em até 48h. Ex: 'Perfeito, decisão em dupla faz todo sentido. Você consegue deixar seu sócio livre por 15 minutos amanhã ou quinta? Prefiro apresentar pra vocês dois juntos — assim ele tira as dúvidas na hora e vocês decidem sem depender de intermediário.'"
+        tags: [decisor, dupla-decisão, próximo-passo]
+
+      - id: mensalidade_surpresa
+        question: "Esses R$ 1.500 é único pra sempre ou tem mensalidade depois?"
+        bad_response: "Esconder a mensalidade até o contrato chegar. Resposta evasiva tipo 'a gente pode ver depois'."
+        good_response_template: "Antecipar antes do cliente perguntar. Ex: 'Carlos, vou ser claro: setup é R$ 1.500 único + R$ 300/mês de manutenção (hospedagem do agente, monitoramento 24/7, atualizações e suporte). Sem fidelidade — pode cancelar a qualquer momento depois dos 30 dias de garantia.'"
+        tags: [preço, recorrência, transparência]
+
+      - id: aumenta_conversao_quanto
+        question: "Aumenta minha conversão em quanto? Vocês têm número?"
+        bad_response: "Inventar '20% de aumento' baseado em 'pesquisa de mercado'."
+        good_response_template: "Não inventar estatística genérica — usar o ROI do próprio cliente. Ex: 'Não vou te enrolar com média de mercado. O que importa é o seu caso: você perde R$ 4 mil por mês com atendimento lento. Em 11 dias o setup se paga. Em 3 meses você recuperou 12x o investimento. Esse é o número que importa.'"
+        tags: [prova-social, ROI, credibilidade]
+
+  ecommerce:
+    contexto: "E-commerce / loja online — perda de leads no WhatsApp (CAC alto). Decisor geralmente solo (dono ou gerente de marketing). Sensibilidade a ROI mensurável."
+    objections:
+      - id: ja_tenho_chatbot
+        question: "Já tenho um chatbot da [plataforma X]. Por que mudar?"
+        bad_response: "Atacar a plataforma concorrente; comparar feature por feature."
+        good_response_template: "Diagnóstico antes de pitch. Ex: 'Que bom! Quantas conversões esse chatbot está te trazendo por mês? E quantas mensagens chegam que ele NÃO consegue responder e precisa de humano? Pergunto porque o nosso agente é diferente: usa LLM (não árvore de decisão), então responde fora do script. Mas só faz sentido se o seu chatbot atual estiver deixando dinheiro na mesa.'"
+        tags: [concorrência, diagnóstico, diferenciação]
+
+      - id: cliente_quer_humano
+        question: "Meu cliente quer falar com gente, não com robô."
+        bad_response: "Negar a percepção; insistir que IA é igual humano."
+        good_response_template: "Validar percepção + enquadrar agente como filtro, não substituto. Ex: 'Você tem razão — cliente complexo SEMPRE quer humano. O agente faz o trabalho chato: cardápio, horário, prazo de entrega. Quando ele detecta reclamação ou dúvida fora do padrão, transfere pra você com resumo da conversa. Você atende menos volume e atende melhor.'"
+        tags: [objeção-emocional, posicionamento, handoff]
+
+      - id: integracao_complicada
+        question: "Tenho medo de quebrar minha integração com [Shopify / VTEX / Tray]."
+        bad_response: "Minimizar o risco; prometer 'fácil de integrar' sem detalhar."
+        good_response_template: "Reconhecer o risco + plano de mitigação concreto. Ex: 'Risco real. A integração não é via API da sua loja — é só plug no WhatsApp Business. Seu Shopify não toca. Se quiser passar pedido pra dentro da loja depois, fazemos numa segunda fase. Setup limpo, sem risco de quebrar o que já funciona.'"
+        tags: [técnica, integração, risco]
+
+  clinica:
+    contexto: "Clínica / consultório — paciente no-show, agenda mal preenchida. Decisor geralmente o próprio médico/dentista (dono) + recepcionista que opera o WhatsApp."
+    objections:
+      - id: lgpd_dados_pacientes
+        question: "Posso ter problema de LGPD passando dados de paciente pro robô?"
+        bad_response: "Minimizar a preocupação ('não se preocupa').'"
+        good_response_template: "Validar a preocupação (é legítima) + plano de mitigação. Ex: 'Preocupação certa. O agente NÃO armazena prontuário nem diagnóstico — só agenda horário, confirma consulta e lembra de exame pendente (essas mensagens já são feitas hoje pelo WhatsApp da recepção, sem mudança LGPD). Se quiser, faço setup com termo de uso pra paciente aceitar antes da primeira conversa. Sem risco novo.'"
+        tags: [compliance, LGPD, mitigação]
+
+      - id: recepcionista_perde_emprego
+        question: "Minha recepcionista vai perder o emprego pra esse robô?"
+        bad_response: "Confirmar que sim ou desviar do assunto."
+        good_response_template: "Reposicionar como alívio de tarefa repetitiva, não substituição. Ex: 'Pelo contrário — a recepcionista atende hoje em média 80 mensagens repetitivas por dia (horário, endereço, valores). Com o agente, ela atende as 20 que importam (paciente chateado, remarcação complexa, primeira consulta). Mesma equipe, mais qualidade no atendimento humano.'"
+        tags: [objeção-emocional, equipe, posicionamento]
+
+      - id: paciente_idoso
+        question: "Meu público é mais idoso, eles não vão saber usar."
+        bad_response: "Discordar do cliente; insistir que todo mundo usa WhatsApp."
+        good_response_template: "Validar + dar dado concreto. Ex: 'Faz sentido. O agente funciona em texto natural, sem botão nem menu. Paciente digita uma pergunta tipo que horas abre amanhã e recebe resposta. Se não entender, o agente identifica e passa pra recepcionista. Vale rodar 2 semanas com 30 dias de garantia — se 20% dos seus pacientes não usar, a gente cancela sem multa.'"
+        tags: [perfil-cliente, adoção, garantia]
+
+  agencia:
+    contexto: "Agência de marketing / consultoria B2B — vende serviço pra outros donos de negócio. Decisor é o próprio dono da agência. Sensibilidade ao tempo (não a custo)."
+    objections:
+      - id: ja_construo_isso
+        question: "Eu mesmo construo isso pra meus clientes. Por que comprar de vocês?"
+        bad_response: "Defender que sua skill é melhor; entrar em comparação técnica."
+        good_response_template: "Calcular custo de oportunidade. Ex: 'Você consegue construir? Sim. Quanto tempo leva por cliente? 40-60 horas. Sua hora vale R$ 200? Então cada implementação custa R$ 10 mil em tempo seu. A gente entrega em 7 dias, você revende a R$ 5 mil pro seu cliente, e tem 20 horas livres pra vender mais. White label disponível.'"
+        tags: [DIY, custo-oportunidade, white-label]
+
+      - id: white_label_preço
+        question: "Quero white label. Quanto fica?"
+        bad_response: "Dar preço sem entender volume."
+        good_response_template: "Diagnosticar volume antes de precificar. Ex: 'Pra precificar white label preciso saber: quantos clientes você atende hoje, quanto cobra por implementação e qual ticket recorrente. Em geral nosso white label fica 40% do preço final + R$ 100/cliente/mês. Mas faz mais sentido a gente calcular pro seu caso específico.'"
+        tags: [white-label, volume, preço]
+
+  servico_local:
+    contexto: "Estética, oficina, pet shop, salão — atendimento local com agenda. Dono trabalha na operação. Decisor é o próprio dono."
+    objections:
+      - id: nao_entendo_tecnologia
+        question: "Eu não entendo nada disso, é muito complicado pra mim."
+        bad_response: "Mostrar a complexidade técnica; usar termos como 'API', 'LLM', 'webhook'."
+        good_response_template: "Eliminar a dimensão técnica do pitch. Ex: 'Você não precisa entender — você precisa que funcione. Eu faço o setup completo em 7 dias. Depois disso, pra você atualizar preço ou horário tem um painelzinho onde você só edita o número e salva. Tipo um WhatsApp das suas configurações. Se quiser, te mostro em 30 segundos pelo celular.'"
+        tags: [objeção-emocional, simplicidade, demo]
+
+      - id: meu_atendimento_eh_diferente
+        question: "Meu atendimento é muito pessoal, robô vai estragar."
+        bad_response: "Insistir que IA é igual humano."
+        good_response_template: "Reposicionar como guardião do tom, não substituto. Ex: 'Concordo — atendimento pessoal é seu diferencial. Por isso o agente só responde o que NÃO depende de toque pessoal (horário, preço da escova, se atende com cachorro). Quando alguém pergunta algo emocional ou complexo, passa pra você IMEDIATAMENTE. O atendimento pessoal continua sendo você. O agente só tira o trabalho chato da sua frente.'"
+        tags: [posicionamento, tom-pessoal, handoff]
+
+# Tags universais (não-segmentadas) — usadas no cruzamento com Risk Flags do /analise-call
+universal_tags:
+  - preço
+  - recorrência
+  - parcelamento
+  - sensibilidade-preço
+  - prova-social
+  - credibilidade
+  - sem-case
+  - decisor
+  - dupla-decisão
+  - próximo-passo
+  - transparência
+  - ROI
+  - objeção-emocional
+  - posicionamento
+  - handoff
+  - concorrência
+  - diagnóstico
+  - diferenciação
+  - técnica
+  - integração
+  - risco
+  - compliance
+  - LGPD
+  - mitigação
+  - equipe
+  - perfil-cliente
+  - adoção
+  - garantia
+  - DIY
+  - custo-oportunidade
+  - white-label
+  - volume
+  - simplicidade
+  - demo
+  - tom-pessoal

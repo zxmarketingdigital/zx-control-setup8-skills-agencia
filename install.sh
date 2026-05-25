@@ -50,9 +50,9 @@ if [ "$OS_NAME" != "Darwin" ] && [ "$BLOCO_A_ONLY" = false ]; then
 fi
 echo ""
 
-# ── Bloco A: 5 Skills ────────────────────────────────────────────
-header "Bloco A: Instalando 5 Skills"
-SKILLS=(diagnostico-empreendedor analise-call prototipar-sistema simulador-vendas criar-orcamento)
+# ── Bloco A: 6 Skills ────────────────────────────────────────────
+header "Bloco A: Instalando 6 Skills"
+SKILLS=(diagnostico-empreendedor analise-call prototipar-sistema simulador-vendas criar-orcamento pre-call-checklist)
 for s in "${SKILLS[@]}"; do
   step "Copiando /$s ..."
   if [ "$DRY_RUN" = false ]; then
@@ -75,7 +75,7 @@ fi
 ok "_shared → $SKILLS_DST/_shared/"
 
 echo ""
-echo "  5 skills instaladas. Disponíveis imediatamente no Claude Code:"
+echo "  6 skills instaladas. Disponíveis imediatamente no Claude Code:"
 for s in "${SKILLS[@]}"; do echo "    /$s"; done
 
 if [ "$BLOCO_A_ONLY" = true ]; then
@@ -154,15 +154,17 @@ ok "Backend + LaunchAgents instalados em ~/.zx-lead-machine/"
 header "Instalação concluída!"
 echo ""
 echo "  O que foi instalado:"
-echo "    5 skills:       ~/.claude/skills/{diagnostico-empreendedor,analise-call,...}"
+echo "    6 skills:       ~/.claude/skills/{diagnostico-empreendedor,analise-call,prototipar-sistema,simulador-vendas,criar-orcamento,pre-call-checklist}"
+echo "    Banco objeções: ~/.claude/skills/_shared/objections-bank/agente-ia-whatsapp.yaml"
 echo "    Lead Machine:   ~/projetos/lead-machine-lite/"
 echo "    LaunchAgents:   com.zxlab.lead-machine-lite + com.zxlab.lead-machine-lite-tunnel"
 echo ""
 echo "  Próximos passos:"
 echo "    1. Edite ~/.zx-lead-machine/backend/.env com sua ANTHROPIC_API_KEY"
 echo "    2. No Claude Code, teste: /diagnostico-empreendedor"
-echo "    3. Abra o dashboard: open \"\$(cat ~/.zx-lead-machine/dashboard-url.txt)\""
-echo "    4. Use /lead-machine-lite para gerenciar leads e o tunnel"
+echo "    3. Antes da próxima call comercial: /pre-call-checklist {cliente-slug}"
+echo "    4. Abra o dashboard: open \"\$(cat ~/.zx-lead-machine/dashboard-url.txt)\""
+echo "    5. Use /lead-machine-lite para gerenciar leads e o tunnel"
 echo ""
 if [ "$DRY_RUN" = true ]; then
   echo "  [DRY-RUN] Nenhum arquivo foi modificado."

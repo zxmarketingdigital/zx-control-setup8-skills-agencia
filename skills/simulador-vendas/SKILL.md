@@ -418,6 +418,116 @@ Normalização do output (do código original):
 
 ---
 
+## Extensões ZX LAB (opt-in — NÃO mudam o SYSTEM_PROMPT)
+
+Estas extensões são **append-only ao final do `clientPersona` ou do schema do report**, ativadas só quando o aluno passar argumento explícito. Nada do que está acima muda.
+
+### Modo `--focus <categoria>`
+
+Quando o aluno invocar `/simulador-vendas --focus desvio-preco` (ou outras categorias), a skill adiciona **um bloco extra ao final do `clientPersona`** com instruções de comportamento focado. O `scenarioInstructions` literal por cenário permanece exatamente como está.
+
+**Validação de input (obrigatória):**
+
+```python
+FOCUS_VALIDO = {
+    "desvio-preco",
+    "omissao-mensalidade",
+    "sem-case",
+    "sem-discovery",
+    "subcobrar",
+}
+
+def validar_focus(focus_arg: str | None) -> str | None:
+    if focus_arg is None:
+        return None  # sem --focus → roda no modo padrão (sem bloco extra)
+    if focus_arg not in FOCUS_VALIDO:
+        # ABORTAR — NÃO ignorar silenciosamente
+        validos = ", ".join(sorted(FOCUS_VALIDO))
+        raise SystemExit(
+            f"❌ --focus '{focus_arg}' inválido.\n"
+            f"   Categorias válidas: {validos}\n"
+            f"   Exemplo: /simulador-vendas --difficulty hard --focus desvio-preco"
+        )
+    return focus_arg
+```
+
+Regras:
+- **Sem `--focus`** → roda no modo padrão (clientPersona literal sem bloco extra). NÃO é erro.
+- **`--focus` com valor válido** → adiciona bloco correspondente ao final do `clientPersona`.
+- **`--focus xyz` (valor inválido)** → ABORTAR com mensagem listando categorias válidas. NUNCA ignorar silenciosamente.
+- **Múltiplos `--focus` simultâneos** → NÃO suportado nesta versão. Se aluno passar 2x, usar a última ocorrência e imprimir warning. Se quiser combinar, rodar 2 sessões consecutivas.
+
+Categorias suportadas:
+
+| Flag | Bloco adicionado ao clientPersona |
+|---|---|
+| `--focus desvio-preco` | `FOCO DO TREINO: Pergunte o preço explicitamente a cada 3-4 mensagens, até receber um número claro. Se o vendedor desviar 3 vezes, demonstre desconfiança e sinalize que vai cancelar a call.` |
+| `--focus omissao-mensalidade` | `FOCO DO TREINO: Pergunte direto se há mensalidade, manutenção ou recorrência ao receber qualquer valor de setup. Se o vendedor não mencionar componente recorrente, questione: "É pagamento único pra sempre ou tem mensalidade depois?"` |
+| `--focus sem-case` | `FOCO DO TREINO: Exija prova social verificável (nome, cidade, telefone) de cliente do mesmo segmento. Rejeite "pesquisa de mercado" ou estatísticas genéricas. Se vendedor não tem case real, observe se ele oferece transparência + garantia de cancelamento.` |
+| `--focus sem-discovery` | `FOCO DO TREINO: NÃO entregue informação até ser perguntado. Se vendedor partir direto pra pitch sem fazer perguntas de descoberta, sinalize ("Você ainda não entendeu meu problema") e exija que ele faça perguntas antes de prosseguir.` |
+| `--focus subcobrar` | `FOCO DO TREINO: Ao receber qualquer preço, peça desconto sem oferecer contrapartida ("é bastante", "tem como abaixar?"). Anote mentalmente se o vendedor baixa o preço só pra fechar (subcobrar) ou ancora com firmeza no ROI já discutido.` |
+
+**Implementação:** se `--focus` presente, anexar o bloco correspondente ao final do `clientPersona`, separado por linha em branco. NÃO substituir as outras instruções; apenas adicionar foco.
+
+### Schema estendido do report (extensão local opt-in)
+
+O `TrainerReport` literal continua exatamente como descrito acima. Quando há `--focus`, a skill **adiciona** dois campos extras ao final do MD salvo (não pede ao LLM via prompt — calcula localmente após o report):
+
+```json
+{
+  ... (schema literal mantido) ...
+  "category_scores": {
+    "discovery": 0-100,
+    "pricing": 0-100,
+    "objections": 0-100,
+    "closing": 0-100,
+    "social_proof": 0-100
+  },
+  "suggested_phrases": [
+    {"context": "quando cliente pergunta preço", "model_phrase": "..."},
+    {"context": "quando cliente exige case real", "model_phrase": "..."}
+  ]
+}
+```
+
+Cálculo de `category_scores` (heurística local sobre as tags do diálogo):
+- `pricing`: 100 − (10 × número de tags `preço` consecutivas sem resposta numérica do vendedor)
+- `discovery`: 100 se vendedor fez ≥ 2 perguntas abertas nos primeiros 3 turnos; subtrair 30 por turno sem pergunta
+- `objections`: 100 − (15 × tags `objeção` não endereçadas na resposta seguinte)
+- `closing`: nota_fechamento literal do report (`closing_quality.nota`)
+- `social_proof`: 100 se vendedor mencionou case real ou garantia; 50 se mencionou estatística genérica; 0 se inventou "vários cases"
+
+`suggested_phrases` é gerada localmente consultando o banco de objeções:
+- Arquivo: `~/.claude/skills/_shared/objections-bank/agente-ia-whatsapp.yaml`
+- Para cada objeção do banco com tag igual à do diálogo, anexar `good_response_template` como sugestão.
+- Se banco não existir (instalação parcial), `suggested_phrases: []` — extensão é graceful.
+
+### MD do treino com extensões
+
+Quando `--focus` ativo, adicionar ao final do arquivo `~/treino-vendas/sessao-{ts}.md`:
+
+```markdown
+---
+
+## Extensão ZX LAB — Treino com `--focus {categoria}`
+
+### Scores por categoria
+- Discovery: {discovery}/100
+- Pricing: {pricing}/100
+- Objections: {objections}/100
+- Closing: {closing}/100
+- Social Proof: {social_proof}/100
+
+### Frases-modelo sugeridas (do banco de objeções)
+- **Quando {context}:** "{model_phrase}"
+- **Quando {context}:** "{model_phrase}"
+
+### Sugestão de próximo treino
+Para reforçar o foco em `{categoria}`, rode: `/simulador-vendas --focus {proxima_categoria}` com a mesma dificuldade.
+```
+
+---
+
 ## Pitfalls
 
 - NÃO esquecer de prefixar mensagem do aluno com `[VENDEDOR]:` ao montar o prompt do cliente.
