@@ -35,6 +35,23 @@ warn()   { echo "  ⚠️   $1"; }
 err()    { echo "  ❌  $1" >&2; }
 step()   { echo "  →  $1"; }
 
+# Trap pra Ctrl+C — avisa o aluno que ficou estado parcial e como retomar
+INSTALL_STATE="iniciando"
+on_interrupt() {
+  echo ""
+  err "Instalação interrompida (Ctrl+C) durante: $INSTALL_STATE"
+  err ""
+  err "Estado parcial:"
+  [ -d "$HOME/.claude/skills/diagnostico-empreendedor" ] && err "  • Bloco A: AO MENOS 1 skill foi copiada"
+  [ -d "$HOME/projetos/lead-machine-lite" ] && err "  • Bloco B: pasta lead-machine-lite copiada"
+  [ -d "$HOME/.zx-lead-machine" ] && err "  • LaunchAgent: instalação parcial em ~/.zx-lead-machine"
+  err ""
+  err "Pra retomar: bash install.sh (faz backup do parcial e reinicia limpo)"
+  err "Pra desfazer: remove ~/.claude/skills/*.bak-* e ~/projetos/lead-machine-lite.bak-*"
+  exit 130
+}
+trap on_interrupt INT TERM
+
 # Detectar SO — Lead Machine requer macOS (LaunchAgents)
 OS_NAME="$(uname)"
 
@@ -43,7 +60,7 @@ echo "  Modo: $([ "$DRY_RUN" = true ] && echo 'DRY-RUN (sem side effects)' || ec
 echo "  SO:   $OS_NAME"
 if [ "$OS_NAME" != "Darwin" ] && [ "$BLOCO_A_ONLY" = false ]; then
   warn "Sistema detectado: $OS_NAME (não-macOS)"
-  warn "Bloco A (5 skills da Agência IA — ZX Growth): será instalado normalmente ✅"
+  warn "Bloco A (6 skills da Agência IA — ZX Growth): será instalado normalmente ✅"
   warn "Bloco B (Lead Machine Lite — ZX Lead Machine): pulado — requer macOS (LaunchAgents + cloudflared local)"
   warn "→ Auto-ativando --bloco-a. Pra rodar Lead Machine: use Agência IA 50K (SaaS multi-OS)."
   BLOCO_A_ONLY=true
@@ -144,11 +161,20 @@ fi
 
 # LaunchAgent — delega criação do .env (com ALUNO_TOKEN auto-gerado) e instalação dos plists
 # para o install.sh do launchagent, que escreve em ~/.zx-lead-machine/ (não em $LML_DST)
+#
+# AUDIT: O script abaixo (lead-machine-lite/launchagent/install.sh) faz parte do mesmo
+# repo que você clonou. Ele cria .env, plists em ~/Library/LaunchAgents/ e venv Python.
+# Antes de rodar, confirme que está vendo o conteúdo esperado:
+#   less "$LML_DST/launchagent/install.sh"
+# Em ambiente paranoico, valide o git SHA do repo bate com a release oficial em
+# https://github.com/zxmarketingdigital/zx-control-setup8-skills-agencia/releases
 step "Instalando backend + LaunchAgents (auto-start no boot) ..."
+INSTALL_STATE="bloco-b: launchagent install"
 if [ "$DRY_RUN" = false ]; then
   cd "$LML_DST/launchagent" && bash install.sh
 fi
 ok "Backend + LaunchAgents instalados em ~/.zx-lead-machine/"
+INSTALL_STATE="concluído"
 
 # ── Resumo final ─────────────────────────────────────────────────
 header "Instalação concluída!"

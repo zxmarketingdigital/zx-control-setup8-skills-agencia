@@ -836,7 +836,8 @@ const state = {
 
 // Wrapper de setTimeout que registra o ID pra cleanup posterior
 function trackTimeout(fn, ms) {
-  const id = setTimeout(() => {
+  let id;
+  id = setTimeout(() => {
     state.timeouts = state.timeouts.filter(x => x !== id);
     fn();
   }, ms);
