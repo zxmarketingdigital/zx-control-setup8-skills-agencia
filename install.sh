@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # install.sh — Setup 8: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)
 # Executa: bash install.sh        (completo)
-#          bash install.sh --bloco-a   (só 5 skills)
+#          bash install.sh --bloco-a   (só 6 skills)
 #          bash install.sh --dry-run   (sem side effects)
 set -euo pipefail
 
@@ -19,7 +19,7 @@ for arg in "$@"; do
       echo ""
       echo "Uso: bash install.sh [--dry-run] [--bloco-a]"
       echo "  --dry-run   Simula sem efeitos colaterais"
-      echo "  --bloco-a   Instala só as 5 skills (sem Lead Machine)"
+      echo "  --bloco-a   Instala só as 6 skills (sem Lead Machine)"
       exit 0
       ;;
     *)

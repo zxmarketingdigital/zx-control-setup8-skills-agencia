@@ -104,7 +104,7 @@ def main() -> int:
     if sysname != "Darwin" and py_ok:
         print()
         print("ℹ️  AVISO MULTI-OS:")
-        print("   • Bloco A (5 skills da Agência IA — ZX Growth): funciona neste sistema ✅")
+        print("   • Bloco A (6 skills da Agência IA — ZX Growth): funciona neste sistema ✅")
         print("   • Bloco B (Lead Machine Lite — ZX Lead Machine): requer macOS (LaunchAgents + cloudflared local)")
         print("   • O install.sh detecta automaticamente e instala APENAS o Bloco A.")
 

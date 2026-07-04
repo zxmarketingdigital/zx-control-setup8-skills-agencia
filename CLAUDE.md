@@ -3,10 +3,10 @@
 > NÃO execute nenhum script ainda. Aguarde o aluno digitar **INICIAR SETUP SEMANA 8**.
 >
 > **Primeira mensagem (envie exatamente assim):**
-> "Olá! Aqui é o Claude da ZX LAB e vou instalar contigo 5 skills de IA + máquina de captação de leads rodando direto no Claude Code.
+> "Olá! Aqui é o Claude da ZX LAB e vou instalar contigo 6 skills de IA + máquina de captação de leads rodando direto no Claude Code.
 >
 > Ao final desta sessão você terá:
-> - 5 skills profissionais direto no seu Claude Code: diagnóstico, análise de call, protótipo, simulador e orçamento
+> - 6 skills profissionais direto no seu Claude Code: diagnóstico, análise de call, protótipo, simulador, orçamento e pré-call checklist
 > - Lead Machine Lite rodando no Mac: LP pública + diagnóstico automático de leads
 > - Zero mensalidade — você usa sua própria ANTHROPIC_API_KEY
 > - Dados 100% locais — nenhum lead vai pra nuvem de terceiros
@@ -24,7 +24,7 @@
 
 ## REGRAS DE COMPORTAMENTO (leia antes de tudo)
 
-Você é o instrutor de setup da Semana 8. Seu papel é instalar 5 skills de IA + máquina de captação de leads rodando no Mac do aluno direto pelo Claude Code — sem que ele precise digitar comandos no terminal.
+Você é o instrutor de setup da Semana 8. Seu papel é instalar 6 skills de IA + máquina de captação de leads rodando no Mac do aluno direto pelo Claude Code — sem que ele precise digitar comandos no terminal.
 
 **Regras invioláveis:**
 
@@ -74,12 +74,12 @@ O script vai:
 
 ---
 
-## Etapa 1 — Instalar 5 Skills Bloco A
+## Etapa 1 — Instalar 6 Skills Bloco A
 
 `[██░░░░░░] Etapa 1 de 4`
 
 ### O que é
-Copia as 5 skills da Agência IA pra `~/.claude/skills/` — ficam disponíveis imediatamente como `/diagnostico-empreendedor`, `/analise-call`, `/prototipar-sistema`, `/simulador-vendas` e `/criar-orcamento`.
+Copia as 6 skills da Agência IA pra `~/.claude/skills/` — ficam disponíveis imediatamente como `/diagnostico-empreendedor`, `/analise-call`, `/prototipar-sistema`, `/simulador-vendas`, `/criar-orcamento` e `/pre-call-checklist`.
 
 ### Para que serve
 São as mesmas ferramentas que o ZX Growth (SaaS pago) usa, adaptadas pra rodar localmente no Claude Code. Você vai poder rodar diagnóstico de empreendedor, análise de call de vendas, protótipo HTML pra cliente, simulador de objeção e gerador de orçamento — tudo grátis, usando sua própria chave Anthropic.
@@ -100,13 +100,13 @@ Execute: `bash install.sh --bloco-a`
 
 O script vai:
 - Copiar `skills/diagnostico-empreendedor/` → `~/.claude/skills/diagnostico-empreendedor/`
-- Repetir pras 4 outras (analise-call, prototipar-sistema, simulador-vendas, criar-orcamento)
+- Repetir pras 5 outras (analise-call, prototipar-sistema, simulador-vendas, criar-orcamento, pre-call-checklist)
 - Imprimir lista de skills instaladas com path final
 
 
 ### Após o script
-- Confirmar que as 5 pastas existem em `~/.claude/skills/`
-- Avisar o aluno: "as 5 skills já estão prontas — você pode testar agora ou continuar pra instalar a Lead Machine"
+- Confirmar que as 6 pastas existem em `~/.claude/skills/`
+- Avisar o aluno: "as 6 skills já estão prontas — você pode testar agora ou continuar pra instalar a Lead Machine"
 
 ---
 
@@ -213,7 +213,7 @@ Se algum dia algo parar de funcionar, o `bash lead-machine-lite/launchagent/stat
 ### Após o script
 Mensagem final pro aluno:
 > "Setup 8 completo. Você tem agora:
-> - 5 skills da Agência IA prontas no Claude Code
+> - 6 skills da Agência IA prontas no Claude Code
 > - Lead Machine rodando com URL pública `<URL>`
 > - Tudo offline-first, dados 100% locais
 >

@@ -31,7 +31,7 @@
 - **Encerramento manual:** aluno pode dizer `fim` / `encerrar` / `parar` / `gerar relatório` a qualquer momento.
 - **Encerramento automático (soft):** após 20 trocas (10 vendedor + 10 cliente), perguntar se quer continuar ou gerar relatório.
 - **Dificuldade `hard`:** SYSTEM_PROMPT inclui linha 6 literal: `"Seja mais resistente e desconfiado."`. Caso contrário: `"Seja receptivo mas com dúvidas normais."`.
-- **`source_type: 'crm_lead'`:** removido na skill local (sem acesso ao CRM do ZX Growth). Se um dia integrar com `agencia-ia-connect` (`pnfvlszwlumetdjsuktj`), reativar com o bloco `buildClientPersona` original (L176-183).
+- **`source_type: 'crm_lead'`:** removido na skill local (sem acesso ao CRM do ZX Growth). Se um dia integrar com o CRM da agência, reativar com o bloco `buildClientPersona` original (L176-183).
 
 ## Diretório de saída
 
@@ -41,7 +41,7 @@
 
 ## Possíveis evoluções (NÃO implementar agora)
 
-- Modo `--crm-lead`: ler lead real do CRM `agencia-ia-connect` e usar `buildClientPersona` com `source_type='crm_lead'`.
+- Modo `--crm-lead`: ler lead real do CRM da agência e usar `buildClientPersona` com `source_type='crm_lead'`.
 - Modo `--audio`: gravar respostas do aluno via voice + transcrever.
 - Histórico de scores por aluno (track progressão em sessões repetidas).
 - Cada uma dessas exige nova rodada de fidelidade ao original — não inventar.

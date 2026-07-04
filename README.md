@@ -1,6 +1,6 @@
 # ZX Control — Setup 8: Agentes de Vendas e Captura de Leads (ZX Growth + ZX Lead Machine)
 
-Setup oficial da Semana 8 do ZX Control Scale. 5 skills da Agência IA (ZX Growth) + Lead Machine Lite (ZX Lead Machine) — agentes de vendas e captação de leads via diagnóstico empresarial — sem mensalidade, sem nuvem, sem depender de ninguém.
+Setup oficial da Semana 8 do ZX Control Scale. 6 skills da Agência IA (ZX Growth) + Lead Machine Lite (ZX Lead Machine) — agentes de vendas e captação de leads via diagnóstico empresarial — sem mensalidade, sem nuvem, sem depender de ninguém.
 
 ## Pré-requisitos
 
@@ -62,12 +62,12 @@ skills-agencia/
 
 | Bloco | macOS | Linux | Windows |
 |-------|-------|-------|---------|
-| **A — 5 skills (ZX Growth)** | ✅ | ✅ | ✅ (WSL2 ou Python 3.10+ nativo) |
+| **A — 6 skills (ZX Growth)** | ✅ | ✅ | ✅ (WSL2 ou Python 3.10+ nativo) |
 | **B — Lead Machine Lite (ZX Lead Machine)** | ✅ | ❌ | ❌ |
 
 `install.sh` detecta o SO automaticamente:
 - **macOS:** instala Bloco A + Bloco B (LaunchAgents + cloudflared tunnel)
-- **Linux/Windows:** auto-ativa `--bloco-a` e instala APENAS as 5 skills. Pula o Lead Machine Lite com aviso. Você ganha as ferramentas de IA pra cliente (diagnóstico, análise call, prototipar sistema, simulador, orçamento). Lead Machine vem em versão multiplataforma na Agência IA 50K.
+- **Linux/Windows:** auto-ativa `--bloco-a` e instala APENAS as 6 skills. Pula o Lead Machine Lite com aviso. Você ganha as ferramentas de IA pra cliente (diagnóstico, análise call, prototipar sistema, simulador, orçamento). Lead Machine vem em versão multiplataforma na Agência IA 50K.
 
 ## Limitações conhecidas
 
