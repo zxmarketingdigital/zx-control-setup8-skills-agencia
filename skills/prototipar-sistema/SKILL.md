@@ -143,7 +143,7 @@ Se `sim` → invocar skill `huashu-design` com:
 Renderize protótipo HTML hi-fi pro cliente {nome}. Brief completo em ~/clientes/{slug}/prototipo-brief.md. Etapas de implementação em prototipo-etapas.md. Stack/fluxos/telas já definidos — siga literalmente. Gerar 3 variantes de design (filosofias contrastantes — Information Architecture / Motion Poetics / Experimental Vanguard) pro cliente escolher. Salvar em ~/clientes/{slug}/prototipos-html/.
 ```
 
-(Lembrete: padrão ZX LAB exige 3 protótipos huashu antes de qualquer LP — ver memória `feedback_3_prototipos_huashu_antes_lp.md`.)
+(Lembrete: padrão ZX LAB exige 3 protótipos huashu antes de qualquer LP.)
 
 ---
 
@@ -397,7 +397,7 @@ Esta skill **NUNCA reimplementa renderização HTML**. Sempre delega a `huashu-d
 - Pedido explícito de **3 variantes** com filosofias contrastantes
 - Pasta destino `~/clientes/{slug}/prototipos-html/`
 
-Pattern obrigatório ZX LAB: **nunca reskin direto, sempre 3 huashu antes** (ver `feedback_3_prototipos_huashu_antes_lp.md`).
+Pattern obrigatório ZX LAB: **nunca reskin direto, sempre 3 huashu antes**.
 
 ## Proibições
 

@@ -63,7 +63,7 @@ Skill existente: `~/.claude/skills/huashu-design/SKILL.md`. É o renderizador of
    ```
 3. `huashu-design` toma controle, gera as 3 variantes, aluno escolhe 1, refina.
 
-**Por quê 3 variantes:** padrão ZX LAB obrigatório (ver memória `feedback_3_prototipos_huashu_antes_lp.md`). Nunca reskin direto — sempre 3 huashu antes pra economizar 2h+ de retrabalho.
+**Por quê 3 variantes:** padrão ZX LAB obrigatório. Nunca reskin direto — sempre 3 huashu antes pra economizar 2h+ de retrabalho.
 
 ## Estrutura de pastas resultante
 
