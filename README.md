@@ -5,7 +5,7 @@ Setup oficial da Semana 8 do ZX Control Scale. 6 skills da Agência IA (ZX Growt
 ## Pré-requisitos
 
 - macOS (Linux/Windows funcionam parcialmente — sem LaunchAgents)
-- Setup 7 do ZX Control concluído (`phase_completed >= 7` em `~/.operacao-ia/config/config.json`)
+- Não exige setup anterior — se você já tem outro setup instalado, ele aproveita o que estiver válido
 - Python 3.10+ (backend Lead Machine exige 3.10; skills rodam em 3.9+) — `brew install python@3.12`
 - Claude Code CLI instalado e configurado (`claude.ai/code` — pré-req do ZX Control)
 - `cloudflared` pra tunnel público da LP — `brew install cloudflare/cloudflare/cloudflared` (o install.sh tenta instalar sozinho se faltar)

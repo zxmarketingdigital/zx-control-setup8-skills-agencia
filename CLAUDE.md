@@ -45,10 +45,10 @@ Você é o instrutor de setup da Semana 8. Seu papel é instalar 6 skills de IA 
 `[░░░░░░░░] Etapa 0 de 4 (validação)`
 
 ### O que é
-Valida o ambiente do aluno antes de instalar qualquer coisa: macOS, Python 3.10+, `git`, `python3`, `claude` CLI e Setup 7 concluído (`phase_completed >= 7`).
+Valida o ambiente do aluno antes de instalar qualquer coisa: macOS, Python 3.10+, `git`, `python3`, `claude` CLI. Não exige nenhum setup anterior.
 
 ### Para que serve
-Evita que o setup quebre no meio. Se faltar `claude` CLI ou Setup 7 não estiver pronto, o script para aqui com mensagem clara — sem deixar instalação parcial.
+Evita que o setup quebre no meio. Se faltar `claude` CLI, `git` ou Python 3.10+, o script para aqui com mensagem clara — sem deixar instalação parcial.
 
 ### Como você vai usar no dia-a-dia
 Você não roda esse check manualmente — é só pra eu (Claude) garantir que vamos prosseguir com tudo certo.
@@ -62,7 +62,7 @@ Execute: `python3 setup/check_prerequisites.py`
 
 O script vai:
 - Verificar Python 3.10+, macOS/Linux/Windows
-- Confirmar que Setup 7 está concluído (lê `~/.operacao-ia/config/config.json`)
+- Criar `~/.operacao-ia/config/config.json` mínimo se não existir (ou reaproveitar o que já está válido; se estiver corrompido, faz backup e recria). Não exige nenhum setup anterior
 - Conferir presença de `git`, `python3`, `claude`
 - Criar pastas base em `~/.operacao-ia/{config,scripts,leads}` se não existirem
 - Imprimir `N/N checks passaram` no final
@@ -70,7 +70,7 @@ O script vai:
 
 ### Após o script
 - Se sair com código 0 → seguir para Etapa 1
-- Se sair com código 1 → mostrar ao aluno qual check falhou e como resolver (ex.: "rode Setup 7 primeiro", "instale `claude` em claude.ai/code")
+- Se sair com código 1 → mostrar ao aluno qual check falhou e como resolver (ex.: "instale `claude` em claude.ai/code", "instale Python 3.10+")
 
 ---
 
