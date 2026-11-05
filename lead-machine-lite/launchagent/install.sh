@@ -103,11 +103,17 @@ if [ -d "$VENV_DIR" ]; then
         msg_ok "Venv válido (reutilizando)"
     else
         msg_warn "Venv quebrado (provável atualização de Python). Recriando..."
-        rm -rf "$VENV_DIR"
+        VENV_BAK="$VENV_DIR.bak-$(date +%s)"
+        mv "$VENV_DIR" "$VENV_BAK"
+        # venv novo está vazio: invalida o cache de requirements pra reinstalar as deps
+        rm -f "$INSTALL_DIR/.requirements.cached.txt"
         python3 -m venv "$VENV_DIR"
         msg_ok "Venv recriado em $VENV_DIR"
+        msg_info "Venv antigo guardado em $VENV_BAK (pode apagar à mão quando quiser)"
     fi
 else
+    # venv novo está vazio: invalida o cache de requirements pra reinstalar as deps
+    rm -f "$INSTALL_DIR/.requirements.cached.txt"
     python3 -m venv "$VENV_DIR"
     msg_ok "Venv criado em $VENV_DIR"
 fi

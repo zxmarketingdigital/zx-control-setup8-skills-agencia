@@ -60,7 +60,7 @@ cat ~/.zx-lead-machine/tunnel-url.txt
 ./status.sh      # Saúde + logs + leads + URL atual
 ./restart.sh     # Reinicia backend + tunnel (URL muda)
 ./uninstall.sh   # Remove LaunchAgents (mantém dados)
-./uninstall.sh --purge   # Remove TUDO (incluindo leads salvos)
+./uninstall.sh --purge   # Arquiva TUDO em .bak-<data> (incluindo leads salvos; nada é apagado)
 ```
 
 Para atualizar para uma versão nova: `git pull` e rode `./install.sh` de novo.
@@ -149,5 +149,5 @@ Geralmente é cloudflared desatualizado: `brew upgrade cloudflared && ./restart.
 
 ```bash
 ./uninstall.sh           # remove só os LaunchAgents
-./uninstall.sh --purge   # remove tudo (cuidado: apaga leads salvos)
+./uninstall.sh --purge   # arquiva tudo em .bak-<data> (leads e chaves continuam no disco até você apagar a cópia)
 ```
