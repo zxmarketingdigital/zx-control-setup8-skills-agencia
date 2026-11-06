@@ -1,7 +1,7 @@
 # Lead Machine Lite — Instalação local
 
-Backend FastAPI + tunnel público (cloudflared) rodando 100% local no seu Mac.
-O lead acessa pela URL pública; os dados nunca saem da sua máquina.
+Backend FastAPI + tunnel público (cloudflared) rodando no seu Mac.
+O lead acessa pela URL pública e os leads ficam guardados na sua máquina. O formulário passa pelo tunnel da Cloudflare e o diagnóstico envia os dados do lead à API da Anthropic.
 
 ---
 
@@ -39,7 +39,7 @@ No final mostra:
 
 ```
 URL pública (mande pro lead): https://abc-def-ghi.trycloudflare.com
-Dashboard local (você):       http://localhost:8792/dashboard?token=...
+Dashboard local (você):       http://localhost:8792/dashboard#token=...
 ```
 
 ---
@@ -97,6 +97,10 @@ Edite `~/Library/LaunchAgents/com.zxlab.lead-machine-lite.plist` e troque a port
 ./restart.sh
 ```
 
+### Limite de gasto na Anthropic
+
+A URL pública não pede login, e cada lead que responde gera chamadas pagas à API da Anthropic na sua conta. Antes de divulgar o link, defina um limite de gasto no console da Anthropic.
+
 ### "Backend não sobe"
 
 ```bash
@@ -127,6 +131,8 @@ Geralmente é cloudflared desatualizado: `brew upgrade cloudflared && ./restart.
 │   ├── requirements.txt
 │   ├── .env.example
 │   └── .env                 ← SUAS chaves (chmod 600)
+├── dashboard/               ← página do dashboard (/dashboard)
+├── public/                  ← página pública do lead (/)
 ├── venv/                    ← virtualenv isolado
 ├── logs/
 │   ├── backend.out.log

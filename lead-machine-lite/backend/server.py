@@ -18,6 +18,7 @@ import secrets
 import sys
 import time
 import uuid
+import weakref
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Optional
@@ -60,6 +61,7 @@ _last_insecure_warn_ts: float = 0.0
 
 DASHBOARD_DIR = Path(__file__).resolve().parent.parent / "dashboard"
 DASHBOARD_INDEX = DASHBOARD_DIR / "index.html"
+PUBLIC_INDEX = Path(__file__).resolve().parent.parent / "public" / "index.html"
 
 # CORS — origens permitidas. Por padrão só localhost + trycloudflare.
 # Aluno pode customizar via LEAD_MACHINE_CORS_ORIGINS="https://meu.dom,https://outro.dom".
@@ -173,11 +175,11 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _lead_public_view(lead: dict[str, Any]) -> dict[str, Any]:
-    """Retorna SUBSET seguro de um lead para endpoints autenticados de aluno.
+def _lead_dashboard_view(lead: dict[str, Any]) -> dict[str, Any]:
+    """O que o dono da conta vê no dashboard: só em rota protegida por ALUNO_TOKEN.
 
-    Remove PII bruta (email, telefone), `_pending_question` interno e
-    `raw_llm_output` cru (debug interno). Lead bruto continua no JSON local.
+    Traz contato e respostas, que ele precisa para atender o lead. Ficam de fora
+    `_pending_question` e `raw_llm_output`, que são internos.
     """
     info = lead.get("lead_info") or {}
     materials = lead.get("materials") or {}
@@ -187,9 +189,18 @@ def _lead_public_view(lead: dict[str, Any]) -> dict[str, Any]:
         "updated_at": lead.get("updated_at"),
         "status": lead.get("status"),
         "answers_count": len(lead.get("answers") or []),
+        "answers": [
+            {
+                "question_key": a.get("question_key", ""),
+                "question_text": a.get("question_text", ""),
+                "answer": a.get("answer", ""),
+                "answered_at": a.get("answered_at"),
+            }
+            for a in (lead.get("answers") or [])
+        ],
         "lead_info": {
-            "nome": info.get("nome", ""),
-            "empresa": info.get("empresa", ""),
+            campo: info.get(campo, "")
+            for campo in ("nome", "email", "empresa", "telefone", "segmento", "website", "instagram")
         },
         "diagnostico_md": lead.get("diagnostico_md"),
         "plano_md": lead.get("plano_md"),
@@ -214,11 +225,18 @@ def load_lead(lead_id: str) -> Optional[dict[str, Any]]:
             fcntl.flock(f.fileno(), fcntl.LOCK_UN)
 
 
+def _abrir_privado(caminho: str, flags: int) -> int:
+    fd = os.open(caminho, flags, 0o600)
+    os.fchmod(fd, 0o600)
+    return fd
+
+
 def save_lead(lead: dict[str, Any]) -> None:
     lead["updated_at"] = _now_iso()
     path = _lead_path(lead["lead_id"])
     tmp = path.with_suffix(".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
+    # Lead tem e-mail e telefone: só o dono da conta lê (umask não afrouxa, tmp antigo não herda).
+    with open(tmp, "w", encoding="utf-8", opener=_abrir_privado) as f:
         fcntl.flock(f.fileno(), fcntl.LOCK_EX)
         try:
             json.dump(lead, f, ensure_ascii=False, indent=2)
@@ -314,6 +332,7 @@ def _parse_chat_json(text: str) -> dict[str, Any]:
 
 
 MIN_QUESTIONS_BEFORE_END = 3  # LLM não pode encerrar antes de 3 respostas
+MAX_LLM_QUESTION_KEY = 100  # AnswerIn aceita 120: sobra espaço para o sufixo de _unique_question_key
 
 
 def _call_chat_llm(context: str, extra_user: str = "") -> dict[str, Any]:
@@ -342,15 +361,31 @@ def _call_chat_llm(context: str, extra_user: str = "") -> dict[str, Any]:
     try:
         parsed = _parse_chat_json(full)
     except (ValueError, json.JSONDecodeError) as e:
-        log.error("Failed to parse LLM JSON: %s | raw=%s", e, full[:300])
+        log.error("Failed to parse LLM JSON: %s (len=%d)", e, len(full))
         raise HTTPException(status_code=500, detail="parse_error") from e
 
-    if not parsed.get("question_key") or not parsed.get("question_label"):
-        log.error("Invalid LLM response: %s", parsed)
+    key = parsed.get("question_key")
+    label = parsed.get("question_label")
+    if (
+        not isinstance(key, str) or not key.strip() or len(key) > MAX_LLM_QUESTION_KEY
+        or not isinstance(label, str) or not label.strip()
+    ):
+        log.error("Invalid LLM response: tipo=%s", type(parsed).__name__)
         raise HTTPException(status_code=500, detail="invalid_structure")
 
     parsed.setdefault("optional_hint", "")
     return parsed
+
+
+def _unique_question_key(key: str, answers: list[dict]) -> str:
+    """O LLM pode repetir uma key já usada: sem isto, a resposta nova apagaria a anterior."""
+    used = {a.get("question_key") for a in answers}
+    if key not in used:
+        return key
+    n = 2
+    while f"{key}_{n}" in used:
+        n += 1
+    return f"{key}_{n}"
 
 
 def llm_next_question(lead_info: dict[str, str], answers: list[dict]) -> dict[str, Any]:
@@ -504,26 +539,39 @@ async def generate_report_async(lead_id: str) -> None:
         texts = await loop.run_in_executor(None, llm_generate_report, lead["lead_info"], lead["answers"])
         score = round((len(lead["answers"]) / MAX_QUESTIONS) * 100)
         diagnostico_md, plano_md = _texts_to_markdown(lead["lead_info"], texts, score)
-        lead = load_lead(lead_id) or lead  # re-read antes de gravar
-        lead["diagnostico_md"] = diagnostico_md
-        lead["plano_md"] = plano_md
-        lead["raw_llm_output"] = texts
-        lead["status"] = "ready"
-        save_lead(lead)
+        async with _lead_lock(lead_id):
+            lead = load_lead(lead_id) or lead  # re-read antes de gravar
+            lead["diagnostico_md"] = diagnostico_md
+            lead["plano_md"] = plano_md
+            lead["raw_llm_output"] = texts
+            lead["status"] = "ready"
+            save_lead(lead)
         log.info("Relatório pronto para lead %s", lead_id)
     except Exception as e:  # noqa: BLE001
         log.exception("Erro gerando relatório para lead %s: %s", lead_id, e)
-        lead = load_lead(lead_id) or lead
-        lead["status"] = "error"
-        lead["raw_llm_output"] = {"error": str(e)}
-        save_lead(lead)
+        async with _lead_lock(lead_id):
+            lead = load_lead(lead_id) or lead
+            lead["status"] = "error"
+            lead["raw_llm_output"] = {"error": str(e)}
+            save_lead(lead)
 
 
 # ─────────────────────────────────────────────────────────────
 # FastAPI app
 # ─────────────────────────────────────────────────────────────
 
-limiter = Limiter(key_func=get_remote_address)
+def _client_ip(request: Request) -> str:
+    # Atrás do tunnel toda conexão chega de loopback: sem isto, todos os leads dividem um único limite.
+    # O cabeçalho só vale quando a conexão vem de loopback; conexão externa não consegue forjá-lo.
+    peer = get_remote_address(request)
+    if peer in ("127.0.0.1", "::1"):
+        real = request.headers.get("cf-connecting-ip", "").strip()
+        if real:
+            return real
+    return peer
+
+
+limiter = Limiter(key_func=_client_ip)
 
 app = FastAPI(title="Lead Machine Lite")
 app.state.limiter = limiter
@@ -560,13 +608,24 @@ class AnswerIn(BaseModel):
 
 
 @app.get("/health")
-def health() -> dict[str, bool]:
-    return {"ok": True}
+def health() -> dict[str, Any]:
+    # "app" identifica este backend: os scripts recusam outro programa que responda na mesma porta.
+    return {"ok": True, "app": "lead-machine-lite"}
+
+
+@app.get("/")
+@limiter.limit("60/minute")
+def serve_public(request: Request) -> FileResponse:
+    if not PUBLIC_INDEX.exists():
+        raise HTTPException(status_code=404, detail="lp_nao_encontrada")
+    return FileResponse(str(PUBLIC_INDEX), media_type="text/html")
 
 
 @app.post("/lead/new")
 @limiter.limit("10/minute")
 async def lead_new(request: Request, body: LeadNewIn = Body(...)) -> dict[str, Any]:
+    if not body.nome.strip() or not body.email.strip():
+        raise HTTPException(status_code=422, detail="Preencha nome e e-mail.")
     lead_id = str(uuid.uuid4())
     lead_info = {
         "nome": body.nome.strip(),
@@ -589,7 +648,7 @@ async def lead_new(request: Request, body: LeadNewIn = Body(...)) -> dict[str, A
         "raw_llm_output": None,
     }
     save_lead(lead)
-    log.info("Lead criado: %s (%s)", lead_id, lead_info["email"])
+    log.info("Lead criado: %s", lead_id)
 
     # Fonte: chamada LLM bloqueante → executor pra não travar o event loop
     loop = asyncio.get_running_loop()
@@ -601,6 +660,7 @@ async def lead_new(request: Request, body: LeadNewIn = Body(...)) -> dict[str, A
         lead["_pending_question"] = {
             "question_key": first["question_key"],
             "question_text": first["question_label"],
+            "optional_hint": first.get("optional_hint", ""),
         }
         save_lead(lead)
 
@@ -615,18 +675,54 @@ async def lead_new(request: Request, body: LeadNewIn = Body(...)) -> dict[str, A
     }
 
 
+_lead_locks: "weakref.WeakValueDictionary[str, asyncio.Lock]" = weakref.WeakValueDictionary()
+
+
+def _lead_lock(lead_id: str) -> asyncio.Lock:
+    lock = _lead_locks.get(lead_id)
+    if lock is None:
+        lock = asyncio.Lock()
+        _lead_locks[lead_id] = lock
+    return lock
+
+
 @app.post("/lead/answer")
 @limiter.limit("30/minute")
 async def lead_answer(request: Request, body: AnswerIn = Body(...)) -> dict[str, Any]:
     lead_id = _validate_lead_id(body.lead_id)
+    # min_length olha o texto antes do strip: só espaços contaria como resposta.
+    if not body.answer.strip():
+        raise HTTPException(status_code=422, detail="Escreva uma resposta antes de enviar.")
+    # A chamada ao LLM demora: sem a trava, duas respostas do mesmo lead leem o mesmo arquivo
+    # e a última a gravar apaga a outra.
+    async with _lead_lock(lead_id):
+        return await _process_answer(lead_id, body)
+
+
+async def _process_answer(lead_id: str, body: AnswerIn) -> dict[str, Any]:
     lead = load_lead(lead_id)
     if not lead:
         raise HTTPException(status_code=404, detail="Lead não encontrado")
 
-    if lead["status"] in ("ready", "pending", "error") and body.question_key == "END":
-        # idempotente — chamada repetida após terminar
+    if lead["status"] in ("ready", "pending", "error"):
+        # Diagnóstico já encerrado: reenvio (retry de rede, duplo clique) não grava nem gera de novo.
         return {
             "done": True,
+            "progress": {"current": len(lead["answers"]), "total": MAX_QUESTIONS},
+        }
+
+    # Só a pergunta pendente é aceita. Reenvio de resposta antiga (retry de rede) re-rodaria o LLM
+    # e trocaria a pergunta que o lead está vendo: devolve a pendente, sem gravar nem chamar o LLM.
+    pending = lead.get("_pending_question") or {}
+    if pending.get("question_key") and body.question_key != pending["question_key"]:
+        log.info("Resposta fora da pendente ignorada lead=%s key=%s", lead_id, body.question_key)
+        return {
+            "done": False,
+            "next_question": {
+                "question_key": pending["question_key"],
+                "text": pending.get("question_text") or pending["question_key"],
+                "optional_hint": pending.get("optional_hint", ""),
+            },
             "progress": {"current": len(lead["answers"]), "total": MAX_QUESTIONS},
         }
 
@@ -638,7 +734,6 @@ async def lead_answer(request: Request, body: AnswerIn = Body(...)) -> dict[str,
     # tentamos recuperar o texto da pergunta a partir do _pending_question salvo
     # (gravado quando o LLM gerou a próxima pergunta no turn anterior)
     question_text = body.question_key
-    pending = lead.get("_pending_question") or {}
     if pending.get("question_key") == body.question_key and pending.get("question_text"):
         question_text = pending["question_text"]
     elif existing_idx is not None:
@@ -680,10 +775,12 @@ async def lead_answer(request: Request, body: AnswerIn = Body(...)) -> dict[str,
             "progress": {"current": len(lead["answers"]), "total": MAX_QUESTIONS},
         }
 
+    next_q["question_key"] = _unique_question_key(next_q["question_key"], lead["answers"])
     # grava o question_text da próxima pergunta antecipadamente, em UM ÚNICO save
     lead["_pending_question"] = {
         "question_key": next_q["question_key"],
         "question_text": next_q["question_label"],
+        "optional_hint": next_q.get("optional_hint", ""),
     }
     save_lead(lead)
 
@@ -846,7 +943,7 @@ def _check_aluno_token(x_aluno_token: Optional[str]) -> None:
             _last_insecure_warn_ts = now
         return
     received = (x_aluno_token or "").strip()
-    if not secrets.compare_digest(received, ALUNO_TOKEN):
+    if not secrets.compare_digest(received.encode("utf-8"), ALUNO_TOKEN.encode("utf-8")):
         raise HTTPException(status_code=401, detail="aluno_token_invalido")
 
 
@@ -932,8 +1029,28 @@ def api_lead_detail(
     lead = load_lead(lead_id)
     if not lead:
         raise HTTPException(status_code=404, detail="Lead não encontrado")
-    # PII filter — não retornar email/telefone, _pending_question, raw_llm_output cru
-    return _lead_public_view(lead)
+    return _lead_dashboard_view(lead)
+
+
+@app.post("/api/lead/{lead_id}/retry-report")
+@limiter.limit("10/minute")
+async def api_lead_retry_report(
+    request: Request,
+    lead_id: str,
+    x_aluno_token: Optional[str] = Header(default=None),
+) -> dict[str, Any]:
+    _check_aluno_token(x_aluno_token)
+    lead_id = _validate_lead_id(lead_id)
+    async with _lead_lock(lead_id):
+        lead = load_lead(lead_id)
+        if not lead:
+            raise HTTPException(status_code=404, detail="Lead não encontrado")
+        if lead["status"] != "error":
+            raise HTTPException(status_code=409, detail="lead_nao_esta_em_erro")
+        lead["status"] = "pending"
+        save_lead(lead)
+    asyncio.create_task(generate_report_async(lead_id))
+    return {"status": "pending"}
 
 
 def _lead_context_for_materials(lead: dict[str, Any]) -> str:
@@ -941,8 +1058,6 @@ def _lead_context_for_materials(lead: dict[str, Any]) -> str:
     nome = info.get("nome") or "(não informado)"
     empresa = info.get("empresa") or "(não informado)"
     segmento = info.get("segmento") or empresa
-    email = info.get("email") or ""
-    telefone = info.get("telefone") or ""
     site = info.get("website") or ""
     ig = info.get("instagram") or ""
 
@@ -952,10 +1067,6 @@ def _lead_context_for_materials(lead: dict[str, Any]) -> str:
         f"- Empresa: {empresa}\n"
         f"- Segmento: {segmento}\n"
     )
-    if email:
-        ctx += f"- Email: {email}\n"
-    if telefone:
-        ctx += f"- Telefone: {telefone}\n"
     if site:
         ctx += f"- Site: {site}\n"
     if ig:
@@ -1032,12 +1143,13 @@ async def lead_generate_copy(
         raise HTTPException(status_code=500, detail="llm_resposta_vazia")
 
     # Persiste em materials.copy[channel]
-    lead = load_lead(lead_id) or lead
-    materials = lead.setdefault("materials", {})
-    copy_store = materials.setdefault("copy", {})
-    copy_store[channel] = copy_md
-    materials.setdefault("copy_updated_at", {})[channel] = _now_iso()
-    save_lead(lead)
+    async with _lead_lock(lead_id):
+        lead = load_lead(lead_id) or lead
+        materials = lead.setdefault("materials", {})
+        copy_store = materials.setdefault("copy", {})
+        copy_store[channel] = copy_md
+        materials.setdefault("copy_updated_at", {})[channel] = _now_iso()
+        save_lead(lead)
     log.info("Copy gerada lead=%s channel=%s len=%d", lead_id, channel, len(copy_md))
 
     return {"copy_md": copy_md, "channel": channel}
@@ -1088,11 +1200,12 @@ async def lead_generate_kit(
     if not kit_md:
         raise HTTPException(status_code=500, detail="llm_resposta_vazia")
 
-    lead = load_lead(lead_id) or lead
-    materials = lead.setdefault("materials", {})
-    materials["kit"] = kit_md
-    materials["kit_updated_at"] = _now_iso()
-    save_lead(lead)
+    async with _lead_lock(lead_id):
+        lead = load_lead(lead_id) or lead
+        materials = lead.setdefault("materials", {})
+        materials["kit"] = kit_md
+        materials["kit_updated_at"] = _now_iso()
+        save_lead(lead)
     log.info("Kit gerado lead=%s len=%d", lead_id, len(kit_md))
 
     return {"kit_md": kit_md}
@@ -1100,11 +1213,9 @@ async def lead_generate_kit(
 
 @app.get("/dashboard")
 @limiter.limit("60/minute")
-def serve_dashboard(
-    request: Request,
-    x_aluno_token: Optional[str] = Header(default=None),
-) -> FileResponse:
-    _check_aluno_token(x_aluno_token)
+def serve_dashboard(request: Request) -> FileResponse:
+    # O navegador não envia o header X-Aluno-Token ao abrir o link: esta rota só entrega
+    # a página, sem dados. A página guarda o token e todo endpoint de dados segue exigindo o header.
     if not DASHBOARD_INDEX.exists():
         raise HTTPException(status_code=404, detail="dashboard_nao_encontrado")
     return FileResponse(str(DASHBOARD_INDEX), media_type="text/html")
@@ -1116,13 +1227,11 @@ def serve_dashboard(
 
 @app.on_event("startup")
 async def recover_pending_reports() -> None:
-    """Reagenda generate_report_async pra leads em status=pending há >5min.
+    """Reagenda generate_report_async pra todo lead em status=pending.
 
-    Quando o processo cai com leads em pending (LLM rodando), o relatório
-    fica preso. Esse watchdog roda no boot e relança a task em background.
+    Roda só no boot de um processo único: nenhuma task da execução anterior
+    sobrevive, então todo pending está órfão, mesmo o gravado segundos antes da queda.
     """
-    from datetime import timedelta
-    threshold = datetime.now(timezone.utc) - timedelta(minutes=5)
     recovered = 0
     for path in LEADS_DIR.glob("*.json"):
         try:
@@ -1136,17 +1245,10 @@ async def recover_pending_reports() -> None:
             continue
         if data.get("status") != "pending":
             continue
-        updated_raw = data.get("updated_at") or ""
-        try:
-            updated_dt = datetime.fromisoformat(updated_raw)
-        except ValueError:
-            continue
-        if updated_dt > threshold:
-            continue
         lead_id = data.get("lead_id")
         if not lead_id:
             continue
-        log.warning("Recovering stuck pending lead %s (updated_at=%s)", lead_id, updated_raw)
+        log.warning("Recovering stuck pending lead %s (updated_at=%s)", lead_id, data.get("updated_at"))
         asyncio.create_task(generate_report_async(lead_id))
         recovered += 1
     if recovered:
@@ -1158,4 +1260,4 @@ if __name__ == "__main__":
 
     port = int(os.getenv("PORT", "8792"))
     # 127.0.0.1 ao invés de 0.0.0.0: tunnel já expõe; reduz surface area na rede local.
-    uvicorn.run("server:app", host="127.0.0.1", port=port, reload=False)
+    uvicorn.run("server:app", host="127.0.0.1", port=port, reload=False, access_log=False)

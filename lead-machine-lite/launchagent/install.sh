@@ -82,6 +82,9 @@ fi
 # ---------- 2. Diretórios ----------
 msg_step "2/9 Criando diretórios"
 mkdir -p "$BACKEND_DIR" "$LOGS_DIR" "$LEADS_DIR" "$LAUNCH_DIR"
+chmod 700 "$LEADS_DIR"
+find "$LEADS_DIR" -maxdepth 1 -type f -exec chmod 600 {} + 2>/dev/null || true
+chmod 700 "$LOGS_DIR"
 msg_ok "$INSTALL_DIR/{backend,logs}"
 msg_ok "$LEADS_DIR"
 
@@ -95,6 +98,19 @@ cp -f "$BACKEND_SRC/server.py" "$BACKEND_DIR/server.py"
 cp -f "$BACKEND_SRC/requirements.txt" "$BACKEND_DIR/requirements.txt"
 cp -f "$BACKEND_SRC/.env.example" "$BACKEND_DIR/.env.example"
 msg_ok "server.py, requirements.txt, .env.example → $BACKEND_DIR/"
+# O backend serve estas páginas a partir da pasta de instalação (a página pública em /).
+for PAGINA in dashboard public; do
+    if [ ! -f "$REPO_ROOT/$PAGINA/index.html" ]; then
+        msg_err "$PAGINA/index.html não encontrado em $REPO_ROOT"
+        exit 1
+    fi
+    # Reinstalar nunca apaga: a versão anterior fica guardada ao lado.
+    if [ -e "$INSTALL_DIR/$PAGINA" ]; then
+        mv "$INSTALL_DIR/$PAGINA" "$INSTALL_DIR/$PAGINA.bak-$(date +%s)"
+    fi
+    cp -R "$REPO_ROOT/$PAGINA" "$INSTALL_DIR/$PAGINA"
+done
+msg_ok "dashboard/ e public/ → $INSTALL_DIR/"
 
 # ---------- 4. Venv + deps ----------
 msg_step "4/9 Criando venv + dependências"
@@ -134,7 +150,8 @@ fi
 msg_step "5/9 Configurando .env"
 ENV_FILE="$BACKEND_DIR/.env"
 if [ ! -f "$ENV_FILE" ]; then
-    cp "$BACKEND_DIR/.env.example" "$ENV_FILE"
+    # O .env.example traz "ALUNO_TOKEN=" vazio: sai aqui para não haver duas linhas
+    ( umask 077; grep -v '^ALUNO_TOKEN=$' "$BACKEND_DIR/.env.example" > "$ENV_FILE" )
     chmod 600 "$ENV_FILE"
 
     # Gera ALUNO_TOKEN 32 chars
@@ -152,28 +169,42 @@ if [ ! -f "$ENV_FILE" ]; then
     read -r RESP || RESP="n"
     case "$RESP" in
         ""|y|Y|yes|YES)
-            "${EDITOR:-nano}" "$ENV_FILE"
+            # EDITOR pode ter argumentos (ex.: "code --wait"); editor que falha não aborta a instalação
+            read -r -a EDITOR_CMD <<< "${EDITOR:-nano}"
+            [ "${#EDITOR_CMD[@]}" -gt 0 ] || EDITOR_CMD=(nano)
+            "${EDITOR_CMD[@]}" "$ENV_FILE" || msg_warn "Editor não abriu. Edite depois: ${EDITOR:-nano} $ENV_FILE"
             ;;
         *)
-            msg_info "Edite depois: $EDITOR $ENV_FILE"
+            msg_info "Edite depois: ${EDITOR:-nano} $ENV_FILE"
             ;;
     esac
 else
     msg_ok ".env já existe (preservando configuração)"
-    # Garante que ALUNO_TOKEN existe E não está vazio (linha "ALUNO_TOKEN=" sem valor)
-    if ! grep -qE "^ALUNO_TOKEN=.+" "$ENV_FILE"; then
-        # Remove linha vazia/inválida se houver
-        if grep -q "^ALUNO_TOKEN=" "$ENV_FILE"; then
-            python3 -c "
+    # Garante ALUNO_TOKEN com valor real. Vazio, só espaços ou só aspas conta como ausente:
+    # o backend lê o valor limpo e recusa subir sem token.
+    if ! python3 - "$ENV_FILE" <<'PYEOF'
 import sys
-p = '$ENV_FILE'
-with open(p) as f: lines = f.readlines()
-lines = [l for l in lines if not (l.startswith('ALUNO_TOKEN=') and l.strip() == 'ALUNO_TOKEN=')]
-with open(p, 'w') as f: f.writelines(lines)
-"
-        fi
+valido = False
+with open(sys.argv[1], encoding="utf-8") as f:
+    for linha in f:
+        if linha.startswith("ALUNO_TOKEN="):
+            valor = linha.split("=", 1)[1].strip().strip("\"'").strip()
+            valido = bool(valor)  # a última ocorrência vale, igual ao carregamento do .env
+sys.exit(0 if valido else 1)
+PYEOF
+    then
         TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')"
-        echo "ALUNO_TOKEN=$TOKEN" >> "$ENV_FILE"
+        ALUNO_TOKEN_NOVO="$TOKEN" python3 - "$ENV_FILE" <<'PYEOF'
+import os, sys
+p = sys.argv[1]
+with open(p, encoding="utf-8") as f:
+    linhas = [l for l in f if not l.startswith("ALUNO_TOKEN=")]
+if linhas and not linhas[-1].endswith("\n"):
+    linhas[-1] += "\n"
+linhas.append("ALUNO_TOKEN=" + os.environ["ALUNO_TOKEN_NOVO"] + "\n")
+with open(p, "w", encoding="utf-8") as f:
+    f.writelines(linhas)
+PYEOF
         msg_ok "ALUNO_TOKEN (re)gerado e adicionado ao .env"
     fi
 fi
@@ -186,13 +217,17 @@ printf "   que descobrir a URL do tunnel. Token salvo em %s (chmod 600)\n\n" "$E
 
 # Validação de ANTHROPIC_API_KEY (formato real: sk-ant-api{XX}-{base64url, >= 30 chars})
 # Cobre: placeholder "sk-ant-...", "sk-ant-COLOQUE_SUA_CHAVE_AQUI", linha vazia, sem prefixo.
-ANTHROPIC_LINE="$(grep -E "^ANTHROPIC_API_KEY=" "$ENV_FILE" 2>/dev/null | head -1 || true)"
+ANTHROPIC_LINE="$(grep -E "^ANTHROPIC_API_KEY=" "$ENV_FILE" 2>/dev/null | tail -1 || true)"
 ANTHROPIC_VAL="${ANTHROPIC_LINE#ANTHROPIC_API_KEY=}"
 if ! echo "$ANTHROPIC_VAL" | grep -qE "^sk-ant-api[0-9]+-[A-Za-z0-9_-]{30,}$"; then
     msg_warn ""
     msg_warn "ANTHROPIC_API_KEY não parece válida (formato esperado: sk-ant-api{XX}-{30+ chars})"
     msg_warn ""
-    msg_warn "Atual:    ${ANTHROPIC_VAL:-(vazio)}"
+    if [ -n "$ANTHROPIC_VAL" ]; then
+        msg_warn "Atual:    preenchida, mas fora do formato (${#ANTHROPIC_VAL} caracteres). O valor não é exibido aqui."
+    else
+        msg_warn "Atual:    (vazio)"
+    fi
     msg_warn ""
     msg_warn "AÇÃO: edite $ENV_FILE e cole a chave real de"
     msg_warn "      https://console.anthropic.com/settings/keys"
@@ -219,7 +254,8 @@ DST_TUNNEL="$LAUNCH_DIR/$PLIST_TUNNEL"
 
 python3 -c "
 import os, sys
-home = os.environ['HOME']
+from xml.sax.saxutils import escape
+home = escape(os.environ['HOME'])
 pairs = [
     (sys.argv[1], sys.argv[2]),
     (sys.argv[3], sys.argv[4]),
@@ -250,31 +286,52 @@ fi
 reload_agent() {
     local label="$1"
     local plist_path="$2"
-    if launchctl list | grep -q "$label"; then
-        launchctl unload "$plist_path" 2>/dev/null || true
-    fi
+    # unload incondicional: "launchctl list | grep -q" dá falso negativo com pipefail.
+    launchctl unload "$plist_path" 2>/dev/null || true
     launchctl load -w "$plist_path"
     msg_ok "$label carregado"
 }
 
+# Outro programa na porta 8792 responderia ao health check e seria exposto pelo tunnel.
+# Roda com o nosso agente já descarregado: o que sobrar escutando não é nosso.
+garantir_porta_livre() {
+    local espera ocupantes=""
+    for espera in 1 2 3 4 5; do
+        ocupantes="$(lsof -nP -iTCP:8792 -sTCP:LISTEN -t 2>/dev/null || true)"
+        [ -z "$ocupantes" ] && return 0
+        sleep 1
+    done
+    launchctl unload "$TUNNEL_PLIST_PATH" 2>/dev/null || true
+    printf "[x] A porta 8792 está em uso por outro programa (PID: %s). Nada foi exposto na internet.\n" "$(echo "$ocupantes" | tr '\n' ' ')" >&2
+    printf "    Veja qual é: lsof -nP -iTCP:8792 -sTCP:LISTEN\n    Feche esse programa e rode de novo.\n" >&2
+    exit 1
+}
+
+# Só conta como no ar se quem responde na porta for este backend.
+backend_e_nosso() {
+    local resp
+    resp="$(curl -fsS -m 2 http://localhost:8792/health 2>/dev/null || true)"
+    case "$resp" in
+        *'"app":"lead-machine-lite"'*) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+TUNNEL_PLIST_PATH="$LAUNCH_DIR/$PLIST_TUNNEL"
+# Tunnel fora do ar até o backend provar que é ele na porta: nenhuma falha abaixo deixa nada exposto.
+launchctl unload "$TUNNEL_PLIST_PATH" 2>/dev/null || true
+launchctl unload "$LAUNCH_DIR/$PLIST_BACKEND" 2>/dev/null || true
+garantir_porta_livre
 reload_agent "$LABEL_BACKEND" "$LAUNCH_DIR/$PLIST_BACKEND"
 
-if [ "$CLOUDFLARED_OK" = "1" ] && [ "$SKIP_TUNNEL" != "1" ]; then
-    reload_agent "$LABEL_TUNNEL" "$LAUNCH_DIR/$PLIST_TUNNEL"
-else
-    msg_warn "Tunnel NÃO carregado — cloudflared faltando."
-    # Garante que tunnel anterior (se foi carregado num run passado) está parado
-    if launchctl list | grep -q "$LABEL_TUNNEL"; then
-        launchctl unload "$LAUNCH_DIR/$PLIST_TUNNEL" 2>/dev/null || true
-        msg_warn "Tunnel anterior descarregado pra evitar loop de restart."
-    fi
-fi
+# URL de execução anterior nunca pode ser lida como se fosse a nova: o quick tunnel troca de endereço a cada subida.
+rm -f "$INSTALL_DIR/tunnel-url.txt"
 
 # ---------- 8. Health check ----------
 msg_step "8/9 Aguardando backend responder em localhost:8792/health (timeout 20s)"
 HEALTH_OK=0
 for i in $(seq 1 20); do
-    if curl -fsS -m 2 http://localhost:8792/health >/dev/null 2>&1; then
+    if backend_e_nosso; then
         HEALTH_OK=1
         break
     fi
@@ -283,8 +340,26 @@ done
 
 if [ "$HEALTH_OK" = "1" ]; then
     msg_ok "Backend respondendo (http://localhost:8792/health)"
+    for ROTA in / /dashboard; do
+        if ! curl -fsS -m 5 -o /dev/null "http://localhost:8792$ROTA" 2>/dev/null; then
+            msg_err "A página $ROTA não abriu. Veja: tail -50 $LOGS_DIR/backend.err.log"
+            msg_err "Instalação NÃO concluída. Corrija o erro do log e rode este script de novo."
+            exit 1
+        fi
+    done
+    msg_ok "Páginas / e /dashboard abrindo"
 else
     msg_err "Backend não respondeu em 20s. Veja: tail -50 $LOGS_DIR/backend.err.log"
+    msg_err "Instalação NÃO concluída. Corrija o erro do log e rode este script de novo."
+    exit 1
+fi
+
+if [ "$CLOUDFLARED_OK" = "1" ] && [ "$SKIP_TUNNEL" != "1" ]; then
+    : > "$LOGS_DIR/tunnel.out.log"
+    : > "$LOGS_DIR/tunnel.err.log"
+    reload_agent "$LABEL_TUNNEL" "$TUNNEL_PLIST_PATH"
+else
+    msg_warn "Tunnel NÃO carregado — cloudflared faltando."
 fi
 
 # ---------- 9. Tunnel URL ----------
@@ -297,7 +372,7 @@ if [ "$CLOUDFLARED_OK" = "1" ]; then
     for i in $(seq 1 30); do
         # cloudflared escreve em stderr — checamos ambos os logs
         TUNNEL_URL="$(grep -hoE 'https://[a-z0-9-]+\.trycloudflare\.com' \
-            "$LOGS_DIR/tunnel.out.log" "$LOGS_DIR/tunnel.err.log" 2>/dev/null | head -1 || true)"
+            "$LOGS_DIR/tunnel.out.log" "$LOGS_DIR/tunnel.err.log" 2>/dev/null | grep -v '^https://api\.' | head -1 || true)"
         if [ -n "$TUNNEL_URL" ]; then
             break
         fi
@@ -316,15 +391,29 @@ else
 fi
 
 # ---------- Resumo ----------
-ALUNO_TOKEN_VAL="$(grep '^ALUNO_TOKEN=' "$ENV_FILE" | cut -d= -f2- || echo '?')"
+# Mesma normalização da validação acima e do backend: sem aspas e sem espaços nas pontas
+ALUNO_TOKEN_VAL="$(python3 - "$ENV_FILE" <<'PYEOF'
+import sys
+valor = ""
+with open(sys.argv[1], encoding="utf-8") as f:
+    for linha in f:
+        if linha.startswith("ALUNO_TOKEN="):
+            valor = linha.split("=", 1)[1].strip().strip("\"'").strip()
+print(valor)
+PYEOF
+)"
 
 # Salva URL completa do dashboard em arquivo separado (chmod 600) — NÃO imprime em texto claro
 DASHBOARD_URL_FILE="$INSTALL_DIR/dashboard-url.txt"
-printf "http://localhost:8792/dashboard?token=%s\n" "$ALUNO_TOKEN_VAL" > "$DASHBOARD_URL_FILE"
+( umask 077; printf "http://localhost:8792/dashboard#token=%s\n" "$ALUNO_TOKEN_VAL" > "$DASHBOARD_URL_FILE" )
 chmod 600 "$DASHBOARD_URL_FILE"
 
 printf "\n%b================================================================%b\n" "$C_BOLD" "$C_RESET"
-printf "%b   LEAD MACHINE LITE — INSTALADO%b\n" "$C_GREEN$C_BOLD" "$C_RESET"
+if [ -n "$TUNNEL_URL" ]; then
+    printf "%b   LEAD MACHINE LITE — INSTALADO%b\n" "$C_GREEN$C_BOLD" "$C_RESET"
+else
+    printf "%b   LEAD MACHINE LITE — PARCIAL: backend no ar, SEM URL pública%b\n" "$C_YELLOW$C_BOLD" "$C_RESET"
+fi
 printf "%b================================================================%b\n\n" "$C_BOLD" "$C_RESET"
 
 if [ -n "$TUNNEL_URL" ]; then
@@ -353,3 +442,9 @@ printf "  Desinstalar:%s/uninstall.sh\n\n" "$SCRIPT_DIR"
 
 printf "%bATENÇÃO:%b se o Mac dormir, o tunnel cai. Configure: System Settings → Energy → Prevent automatic sleeping when display is off.\n" "$C_YELLOW" "$C_RESET"
 printf "Pra rodar 24/7 com domínio fixo: upgrade pro ZX Agência 50K (VPS + dom próprio).\n\n"
+
+# Sem URL pública não há o que mandar ao lead: a instalação não terminou.
+if [ -z "$TUNNEL_URL" ]; then
+    msg_err "Tunnel sem URL pública. Corrija (cloudflared/internet) e rode $SCRIPT_DIR/restart.sh"
+    exit 2
+fi

@@ -15,6 +15,7 @@
         <string>127.0.0.1</string>
         <string>--port</string>
         <string>8792</string>
+        <string>--no-access-log</string>
     </array>
 
     <key>WorkingDirectory</key>
