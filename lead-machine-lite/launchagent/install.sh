@@ -104,7 +104,10 @@ for PAGINA in dashboard public; do
         msg_err "$PAGINA/index.html não encontrado em $REPO_ROOT"
         exit 1
     fi
-    rm -rf "${INSTALL_DIR:?}/$PAGINA"
+    # Reinstalar nunca apaga: a versão anterior fica guardada ao lado.
+    if [ -e "$INSTALL_DIR/$PAGINA" ]; then
+        mv "$INSTALL_DIR/$PAGINA" "$INSTALL_DIR/$PAGINA.bak-$(date +%s)"
+    fi
     cp -R "$REPO_ROOT/$PAGINA" "$INSTALL_DIR/$PAGINA"
 done
 msg_ok "dashboard/ e public/ → $INSTALL_DIR/"
