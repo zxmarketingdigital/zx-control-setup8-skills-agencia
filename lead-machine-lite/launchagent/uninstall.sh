@@ -50,10 +50,15 @@ fi
 msg_info "Parando LaunchAgents..."
 for label in "$LABEL_BACKEND" "$LABEL_TUNNEL"; do
     plist_path="$LAUNCH_DIR/${label}.plist"
+    # Para pelo label: o serviço pode seguir rodando (e o tunnel público) mesmo sem o plist no disco.
+    REMOVED=0
+    if launchctl remove "$label" 2>/dev/null; then REMOVED=1; fi
     if [ -f "$plist_path" ]; then
         launchctl unload "$plist_path" 2>/dev/null || true
         rm -f "$plist_path"
         msg_ok "$label removido"
+    elif [ "$REMOVED" = "1" ]; then
+        msg_ok "$label parado"
     else
         msg_warn "$label não estava instalado"
     fi

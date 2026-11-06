@@ -7,6 +7,8 @@ set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILLS_DST="$HOME/.claude/skills"
+# Fora de skills/: copia antiga dentro da pasta seria lida como skill duplicada
+SKILLS_BAK="$HOME/.claude/skills-backup"
 DRY_RUN=false
 BLOCO_A_ONLY=false
 
@@ -47,7 +49,7 @@ on_interrupt() {
   [ -d "$HOME/.zx-lead-machine" ] && err "  • LaunchAgent: instalação parcial em ~/.zx-lead-machine"
   err ""
   err "Pra retomar: bash install.sh (faz backup do parcial e reinicia limpo)"
-  err "Pra desfazer: remove ~/.claude/skills/*.bak-* e ~/projetos/lead-machine-lite.bak-*"
+  err "Pra desfazer: remove ~/.claude/skills-backup/ e ~/projetos/lead-machine-lite.bak-*"
   exit 130
 }
 trap on_interrupt INT TERM
@@ -74,8 +76,9 @@ for s in "${SKILLS[@]}"; do
   step "Copiando /$s ..."
   if [ "$DRY_RUN" = false ]; then
     if [ -d "$SKILLS_DST/$s" ]; then
-      mv "$SKILLS_DST/$s" "$SKILLS_DST/$s.bak-$(date +%s)"
-      warn "$s já existia — backup criado em $s.bak-*"
+      mkdir -p "$SKILLS_BAK"
+      mv "$SKILLS_DST/$s" "$SKILLS_BAK/$s.bak-$(date +%s)"
+      warn "$s já existia — backup criado em $SKILLS_BAK/$s.bak-*"
     fi
     mkdir -p "$SKILLS_DST/$s"
     cp -r "$REPO_DIR/skills/$s/." "$SKILLS_DST/$s/"
@@ -86,6 +89,12 @@ done
 # Helpers compartilhados (_shared) — usados por algumas skills pra renderizar HTML
 step "Copiando _shared helpers ..."
 if [ "$DRY_RUN" = false ]; then
+  if [ -d "$SKILLS_DST/_shared" ]; then
+    mkdir -p "$SKILLS_BAK"
+    SHARED_BAK="$SKILLS_BAK/_shared.bak-$(date +%s)"
+    cp -r "$SKILLS_DST/_shared" "$SHARED_BAK"
+    warn "_shared já existia — backup criado em $SHARED_BAK"
+  fi
   mkdir -p "$SKILLS_DST/_shared"
   cp -r "$REPO_DIR/skills/_shared/." "$SKILLS_DST/_shared/"
 fi
@@ -122,7 +131,10 @@ ok "Lead Machine Lite copiado"
 
 # Python 3.10+ — exigência hard (Pydantic + FastAPI + Lead Machine backend)
 step "Verificando Python 3.10+ ..."
-PY=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+PY=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null) || {
+  err "Python 3.10+ não encontrado. Instale com: brew install python@3.12 && rode novamente bash install.sh"
+  exit 1
+}
 PY_MAJOR=$(echo "$PY" | cut -d. -f1)
 PY_MINOR=$(echo "$PY" | cut -d. -f2)
 if [ "$PY_MAJOR" -lt 3 ] || { [ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt 10 ]; }; then
@@ -151,7 +163,11 @@ if ! command -v cloudflared &>/dev/null; then
     if [ "$DRY_RUN" = false ]; then
       brew install cloudflare/cloudflare/cloudflared 2>&1 | tail -3 || warn "Falha no brew install — instale manualmente depois"
     fi
-    ok "cloudflared instalado (ou pendente — backend sobe sem tunnel)"
+    if [ "$DRY_RUN" = true ] || command -v cloudflared &>/dev/null; then
+      ok "cloudflared instalado"
+    else
+      warn "cloudflared não instalado — backend sobe sem tunnel. Instale com: brew install cloudflare/cloudflare/cloudflared"
+    fi
   else
     warn "cloudflared faltando + sem brew. Backend vai subir, mas SEM tunnel público."
   fi
@@ -170,14 +186,24 @@ fi
 # https://github.com/zxmarketingdigital/zx-control-setup8-skills-agencia/releases
 step "Instalando backend + LaunchAgents (auto-start no boot) ..."
 INSTALL_STATE="bloco-b: launchagent install"
+LAUNCHAGENT_RC=0
 if [ "$DRY_RUN" = false ]; then
-  cd "$LML_DST/launchagent" && bash install.sh
+  cd "$LML_DST/launchagent" && bash install.sh || LAUNCHAGENT_RC=$?
 fi
-ok "Backend + LaunchAgents instalados em ~/.zx-lead-machine/"
+case "$LAUNCHAGENT_RC" in
+  0) ok "Backend + LaunchAgents instalados em ~/.zx-lead-machine/" ;;
+  2) warn "Backend no ar, mas SEM URL pública: instale o cloudflared e rode ~/projetos/lead-machine-lite/launchagent/restart.sh" ;;
+  *) err "Lead Machine não foi instalado (código $LAUNCHAGENT_RC). As 6 skills já estão instaladas; corrija o erro acima e rode: bash install.sh"
+     exit "$LAUNCHAGENT_RC" ;;
+esac
 INSTALL_STATE="concluído"
 
 # ── Resumo final ─────────────────────────────────────────────────
-header "Instalação concluída!"
+if [ "$LAUNCHAGENT_RC" = "2" ]; then
+  header "Instalação PARCIAL: falta a URL pública"
+else
+  header "Instalação concluída!"
+fi
 echo ""
 echo "  O que foi instalado:"
 echo "    6 skills:       ~/.claude/skills/{diagnostico-empreendedor,analise-call,prototipar-sistema,simulador-vendas,criar-orcamento,pre-call-checklist}"
@@ -195,3 +221,4 @@ echo ""
 if [ "$DRY_RUN" = true ]; then
   echo "  [DRY-RUN] Nenhum arquivo foi modificado."
 fi
+exit "$LAUNCHAGENT_RC"

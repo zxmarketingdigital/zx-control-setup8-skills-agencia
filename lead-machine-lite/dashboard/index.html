@@ -7,8 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js" integrity="sha384-cwS6YdhLI7XS60eoDiC+egV0qHp8zI+Cms46R0nbn8JrmoAzV9uFL60etMZhAnSu" crossorigin="anonymous"></script>
 <style>
   :root{
     --amber:#D97706;
@@ -233,13 +233,19 @@ function safeMd(s){
 
 // ── Token ──────────────────────────────────────────────────
 function getToken(){
+  // O link novo traz o token depois do #: o navegador não envia essa parte ao servidor nem a logs.
+  // ?token= segue aceito para quem ainda tem o link antigo salvo.
   const url = new URL(location.href);
-  const fromQuery = url.searchParams.get('token');
-  if (fromQuery){
-    localStorage.setItem('lm_aluno_token', fromQuery);
+  const doLink = new URLSearchParams(url.hash.slice(1)).get('token') || url.searchParams.get('token');
+  if (doLink){
     url.searchParams.delete('token');
+    url.hash = '';
     history.replaceState({}, '', url.toString());
-    return fromQuery;
+    // O install gera o token só com estes caracteres: o que vier diferente pelo link não é salvo.
+    if (/^[A-Za-z0-9_-]+$/.test(doLink)){
+      localStorage.setItem('lm_aluno_token', doLink);
+      return doLink;
+    }
   }
   return localStorage.getItem('lm_aluno_token') || '';
 }
@@ -257,13 +263,14 @@ function promptToken(msg){
     <div class="modal">
       <h3>Token de acesso</h3>
       <p>${msg || 'Cole o valor de <code>ALUNO_TOKEN</code> definido no <code>.env</code> do backend. Fica salvo neste navegador.'}</p>
-      <input type="text" id="tokenInput" placeholder="ALUNO_TOKEN..." value="${getToken()}" />
+      <input type="text" id="tokenInput" placeholder="ALUNO_TOKEN..." />
       <div class="actions">
         <button class="btn subtle" id="tokenCancel">Cancelar</button>
         <button class="btn" id="tokenSave">Salvar</button>
       </div>
     </div>`;
   document.body.appendChild(div);
+  div.querySelector('#tokenInput').value = getToken();
   const close = ()=>{ div.remove(); _tokenModalOpen = false; };
   div.querySelector('#tokenCancel').onclick = close;
   div.querySelector('#tokenSave').onclick = ()=>{
@@ -460,8 +467,22 @@ function renderDetail(lead){
       <div class="panel" style="text-align:center;padding:40px 20px">
         <div style="font-size:32px;margin-bottom:12px">⚠️</div>
         <div style="font-weight:700;font-size:15px;margin-bottom:8px">Diagnóstico falhou</div>
-        <div style="color:var(--muted);font-size:13px">Tente regenerar via skill <code>/lead-machine-lite</code>.</div>
+        <div style="color:var(--muted);font-size:13px;margin-bottom:16px">As respostas do lead estão salvas. Você pode gerar o diagnóstico de novo.</div>
+        <button class="btn" id="retryReportBtn">Gerar de novo</button>
       </div>`;
+    const retryBtn = document.getElementById('retryReportBtn');
+    retryBtn.onclick = async ()=>{
+      retryBtn.disabled = true;
+      try{
+        await api('/api/lead/' + lead.lead_id + '/retry-report', {method:'POST'});
+        toast('Gerando o diagnóstico de novo.');
+        await loadLeads(true);
+        await selectLead(lead.lead_id);
+      } catch(err){
+        toast('Erro: ' + err.message, 'error');
+        retryBtn.disabled = false;
+      }
+    };
     return;
   }
 
@@ -631,11 +652,31 @@ function renderDetail(lead){
 }
 
 // ── Carregar / auto-refresh ────────────────────────────────
+// A API devolve em páginas: sem isto, contador e filtros só enxergam os leads da primeira.
+async function fetchAllLeads(){
+  const PAGE = 500;
+  let leads = [], offset = 0, total = 0;
+  do {
+    const r = await api(`/api/leads?limit=${PAGE}&offset=${offset}`);
+    const page = r.leads || [];
+    leads = leads.concat(page);
+    total = r.total || 0;
+    offset += PAGE;
+    if (!page.length) break;
+  } while (offset < total);
+  return leads;
+}
+
 async function loadLeads(silent=false){
   try{
-    const r = await api('/api/leads');
-    state.leads = r.leads || [];
+    state.leads = await fetchAllLeads();
     renderList();
+    // O relatório fica pronto em segundo plano: o painel aberto acompanha a mudança de status.
+    const aberto = state.selectedDetail;
+    const atual = aberto && state.leads.find(l => l.lead_id === aberto.lead_id);
+    if (atual && aberto.lead_id === state.selectedId && atual.status !== aberto.status){
+      selectLead(state.selectedId);
+    }
   } catch(e){
     if (!silent){
       const root = document.getElementById('leadList');

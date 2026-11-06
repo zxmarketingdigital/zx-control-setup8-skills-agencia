@@ -32,8 +32,10 @@ fi
 
 printf "\n%b== Health ==%b\n" "$C_BOLD" "$C_RESET"
 HEALTH="$(curl -fsS -m 3 http://localhost:8792/health 2>/dev/null || true)"
-if [ -n "$HEALTH" ]; then
+if printf '%s' "$HEALTH" | grep -q '"app":"lead-machine-lite"'; then
     printf "  %bup%b  %s\n" "$C_GREEN" "$C_RESET" "$HEALTH"
+elif [ -n "$HEALTH" ]; then
+    printf "  %boutro programa%b  a porta 8792 responde, mas não é o Lead Machine. Veja: lsof -nP -iTCP:8792 -sTCP:LISTEN\n" "$C_RED" "$C_RESET"
 else
     printf "  %bdown%b  http://localhost:8792/health não respondeu\n" "$C_RED" "$C_RESET"
 fi

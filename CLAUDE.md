@@ -9,7 +9,7 @@
 > - 6 skills profissionais direto no seu Claude Code: diagnóstico, análise de call, protótipo, simulador, orçamento e pré-call checklist
 > - Lead Machine Lite rodando no Mac: LP pública + diagnóstico automático de leads
 > - Zero mensalidade — você usa sua própria ANTHROPIC_API_KEY
-> - Dados 100% locais — nenhum lead vai pra nuvem de terceiros
+> - Leads guardados no seu computador. O diagnóstico usa a API da Anthropic e a LP pública passa pelo tunnel da Cloudflare
 > - Instalação em 1 comando — tudo empacotado no install.sh
 >
 > Este setup assume que você já tem o Claude Code CLI instalado e funcionando. Se ainda não configurou, instale em claude.ai/code antes de começar.
@@ -146,6 +146,7 @@ O script vai:
 
 
 ### Após o script
+- Saída 2 = backend no ar sem URL pública: instalar o `cloudflared` e rodar `lead-machine-lite/launchagent/restart.sh`. Saída 1 = não instalou: ler o erro impresso.
 - Confirmar que `~/.zx-lead-machine/tunnel-url.txt` contém URL `trycloudflare.com`
 - Confirmar que `launchctl list | grep zxlab.lead-machine-lite` mostra os 2 agentes
 - Anotar URL pública pro aluno (mas NÃO imprimir o `ALUNO_TOKEN` no chat)
@@ -171,15 +172,15 @@ Configura 1x e esquece. Quando seu saldo da Anthropic acabar, é só recarregar 
 
 ### Instalação
 1. Pergunte ao aluno: "você já tem uma chave da Anthropic (`sk-ant-...`)?"
-   - Se **sim** → peça pra colar (NÃO mostre de volta no chat, salve direto)
-   - Se **não** → instrua: acesse `console.anthropic.com/settings/keys`, clique "Create Key", copie e cole aqui
-2. Edite `~/.zx-lead-machine/backend/.env` substituindo `ANTHROPIC_API_KEY=sk-ant-...` pela chave real
+   - Se **não** → instrua: acesse `console.anthropic.com/settings/keys`, clique "Create Key" e copie a chave
+   - **A chave nunca passa pelo chat:** tudo que é colado aqui fica gravado no histórico da sessão. Se o aluno colar mesmo assim, não use o valor e oriente apagar essa chave no console e criar outra
+2. Abra o arquivo para o aluno: `open -e ~/.zx-lead-machine/backend/.env`. Peça para ele trocar `sk-ant-...` pela chave real na linha `ANTHROPIC_API_KEY=`, salvar e fechar
 3. Reinicie o backend: `bash lead-machine-lite/launchagent/restart.sh`
 4. Valide: `curl -fsS http://localhost:8792/health` deve retornar status OK
 
 
 ### Após o script
-- Confirmar que `grep '^ANTHROPIC_API_KEY=sk-ant-' ~/.zx-lead-machine/backend/.env` retorna a linha com chave preenchida (não o placeholder)
+- Confirmar sem mostrar a chave: `grep -c '^ANTHROPIC_API_KEY=sk-ant-[A-Za-z0-9_-]\{20,\}' ~/.zx-lead-machine/backend/.env` deve retornar `1` (`0` = ainda é o placeholder)
 - Avisar o aluno: "tudo pronto — vamos fazer o smoke test"
 
 ---
